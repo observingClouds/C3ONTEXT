@@ -91,7 +91,8 @@ def convert_clas_to_annos_df(clas_df):
     # Allocate new dataframe
     annos_df = pd.DataFrame(
         columns=list(clas_df.columns) + ['x', 'y', 'width', 'height', 'tool_label',
-                                         'started_at', 'finished_at', 'already_seen'],
+                                         'started_at', 'finished_at', 'already_seen'
+                                        ],
         index=np.arange(count)
     )
     # go through each annotation
@@ -110,7 +111,7 @@ def convert_clas_to_annos_df(clas_df):
             annos_df.iloc[j]['already_seen'] = row.metadata['subject_selection_state']['already_seen']
             j += 1
     # Convert start and finish times to datetime
-    for meta in ['started_at', 'finished_at']:
+    for meta in ['started_at', 'finished_at', 'created_at']:
         annos_df[meta] = pd.to_datetime(annos_df[meta])
     return annos_df
 
