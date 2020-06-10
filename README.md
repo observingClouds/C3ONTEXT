@@ -1,4 +1,4 @@
-# EUREC4A_manualclassifications
+# EUREC<sup>4</sup>A_manualclassifications
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3763414.svg)](https://doi.org/10.5281/zenodo.3763414)
 
 This repository includes the source code for the post-processing of the manual cloud classifications
@@ -6,7 +6,7 @@ that have been gathered during an online hackathon with international scientists
 
 ## Example usage: get meso-scale organization along trajectory
 One of the use cases of this dataset is to retrieve the meso-scale organization of shallow convection
-at a specific point in time and space. Because the variety and number of platforms during the EUREC4A
+at a specific point in time and space. Because the variety and number of platforms during the EUREC<sup>4</sup>A
 campaign has been enormous, the procedure to retrieve the cloud classifications along a trajectory is
 shown below for the RV Meteor.
 <details><summary>Source code</summary>
