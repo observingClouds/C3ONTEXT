@@ -17,6 +17,7 @@ level1_data_filename_output = '../processed_data/EUREC4A_ManualClassifications_l
 # Anonymize raw data
 
 df = pd.read_csv(raw_data_filename_input)
+df = df.iloc[38003:]  # remove data from other classification days
 del df['user_name']
 df.to_csv(raw_data_filename_output)
 
