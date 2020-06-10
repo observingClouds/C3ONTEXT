@@ -26,6 +26,7 @@ sys.path.append("/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassificatio
 sys.path.append("../helpers/")
 
 import os
+import subprocess
 import time
 import tqdm
 import logging
@@ -33,8 +34,17 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import xarray as xr
-from pyclouds import *
 from helpers import *
+try:
+    from pyclouds import *
+except:
+    logging.error('Module pyclouds could not be found. Please clone https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds and adapt the sys path accordingly.')
+
+try:
+    git_module_version = subprocess.check_output(["git", "describe", "--dirty"]).strip().decode("utf-8")
+except:
+    git_module_version = "--"
+
 
 # Read zooniverse raw data
 logging.info('Read zooniverse raw data')
@@ -124,7 +134,7 @@ ds_l1.attrs['author'] = 'Hauke Schulz (hauke.schulz@mpimet.mpg.de)'
 ds_l1.attrs['created_on'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M UTC')
 ds_l1.attrs['created_with'] = os.path.basename(__file__) + " with its last modification on " + time.ctime(
             os.path.getmtime(os.path.realpath(__file__)))
-ds_l1.attrs["creation_date"] = time.asctime()
+ds_l1.attrs['version'] = git_module_version
 ds_l1.attrs['python_version'] = "{}".format(sys.version)
 ds_l1.attrs['doi'] = 'not yet set'
 
