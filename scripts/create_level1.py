@@ -34,7 +34,11 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import xarray as xr
+import general_helpers as g
 from helpers import *
+
+g.setup_logging('INFO')
+
 try:
     from pyclouds import *
 except:

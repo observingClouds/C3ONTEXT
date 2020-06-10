@@ -40,7 +40,10 @@ import dask.array as da
 import xarray as xr
 import zarr
 from pyclouds import *
+import general_helpers as g
 from helpers import *
+
+g.setup_logging('INFO')
 
 try:
     git_module_version = subprocess.check_output(["git", "describe", "--dirty"]).strip().decode("utf-8")

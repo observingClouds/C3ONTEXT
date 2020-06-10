@@ -42,7 +42,10 @@ import dask.array as da
 import xarray as xr
 import zarr
 from pyclouds import *
+import general_helpers as g
 from helpers import *
+
+g.setup_logging('INFO')
 
 # workflow = 'EUREC4A (VIS)'  # possible choices: 'EUREC4A (ICON; albedo)', 'EUREC4A (ICON; cloud liquid + ice)', 'EUREC4A (IR)', 'EUREC4A (VIS)']
 # workflow_dict = {'EUREC4A (IR)': 'IR',
@@ -74,10 +77,10 @@ if os.path.exists(level2_file):
     # Open file for reading
     ds_l2 = xr.open_zarr(level2_file)
 elif os.path.exists(level2_file+'.zip'):
-    print('Please unzip {} first an rerun.'.format(level2_file+'.zip'))
+    logging.error('Please unzip {} first an rerun.'.format(level2_file+'.zip'))
     sys.exit()
 else:
-    print('Run create_level2.py to create the level2 data')
+    logging.error('Run create_level2.py to create the level2 data')
 
 da_arr = ds_l2.mask
 
