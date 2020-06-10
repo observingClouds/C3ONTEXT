@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import datetime as dt
+import os
 
 def add_subject_set_id_to_clas_df(clas_df, subj_df, subjs_of_interest):
     """
@@ -9,12 +10,11 @@ def add_subject_set_id_to_clas_df(clas_df, subj_df, subjs_of_interest):
     s = subj_df.set_index('subject_id')
     # HARDCODED: Only using the actual datasets, not practice, etc.
     s = s[s.subject_set_id.apply(lambda s: s in subjs_of_interest)]
-#     import pdb; pdb.set_trace()
     clas_df['subject_set_id'] = clas_df.subject_ids.apply(
         lambda i: s.loc[i].subject_set_id if i in list(s.index) else np.nan)
     clas_df.dropna(subset=['subject_set_id'], inplace=True)
     # Also add filename
-    filenames = clas_df.subject_ids.apply(lambda i: s.loc[i].metadata['file'][48:])
+    filenames = clas_df.subject_ids.apply(lambda i: os.path.basename(s.loc[i].metadata['file']))
     clas_df['fn'] = filenames
     return clas_df
 
