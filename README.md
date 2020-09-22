@@ -4,6 +4,8 @@
 This repository includes the source code for the post-processing of the manual cloud classifications
 that have been gathered during an online hackathon with international scientists in March 2020.
 
+The [overview of the classifications](classification_overview.md) during the EUREC<sup>4</sup>A gives a good first impression about the dataset and the meso-scale patterns of shallow convection encountered during January and February 2020.
+
 ## Example usage: get meso-scale organization along trajectory
 One of the use cases of this dataset is to retrieve the meso-scale organization of shallow convection
 at a specific point in time and space. Because the variety and number of platforms during the EUREC<sup>4</sup>A
