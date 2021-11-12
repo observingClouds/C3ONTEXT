@@ -71,7 +71,7 @@ root_grp = zarr.group(store, overwrite=True)
 mask = root_grp.create_dataset('mask', shape=(nb_classifications, nb_lons, nb_lats, nb_patterns),
                                chunks=(1, nb_lons, nb_lats, nb_patterns),
                                dtype=bool, compressor=zarr.Zlib(level=1))
-clas_ids = root_grp.create_dataset('classification_id', shape=(nb_classifications), chunks=(1),
+clas_ids = root_grp.create_dataset('classification_id', shape=(nb_classifications), chunks=(nb_classifications),
                         dtype=int, compressor=zarr.Zlib(level=1))
 lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
                         dtype=float, compressor=zarr.Zlib(level=1))

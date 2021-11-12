@@ -108,7 +108,7 @@ for combo, combo_details in combos.items():
                                    dtype=float, compressor=zarr.Zlib(level=1))
     dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(nb_dates),
                             dtype=int, compressor=zarr.Zlib(level=1))
-    nb_user = root_grp.create_dataset('nb_users', shape=(nb_users), chunks=(nb_users),
+    nb_user = root_grp.create_dataset('nb_users', shape=(nb_dates), chunks=(nb_dates),
                             dtype=int, compressor=zarr.Zlib(level=1))
     lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
                             dtype=float, compressor=zarr.Zlib(level=1))
