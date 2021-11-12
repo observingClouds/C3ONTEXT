@@ -36,11 +36,13 @@ from helpers import *
 
 g.setup_logging('INFO')
 
+classification = 'EUREC4A'
+
 # Level1 filename
-level1_file = conf.level1.fn_netcdf
+level1_file = conf[classification].level1.fn_netcdf
 
 # Level2 filename
-level2_file = conf.level2.fn_zarr
+level2_file = conf[classification].level2.fn_zarr
 
 
 try:

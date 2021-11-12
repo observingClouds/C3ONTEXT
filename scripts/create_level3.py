@@ -42,14 +42,16 @@ from helpers import *
 
 g.setup_logging('INFO')
 
+classification = 'EUREC4A'
+
 # Level1 filename
-level1_file = conf.level1.fn_netcdf
+level1_file = conf[classification].level1.fn_netcdf
 
 # Level2 filename
-level2_file = conf.level2.fn_zarr
+level2_file = conf[classification].level2.fn_zarr
 
 # Level3 filename
-level3_file = conf.level3.fn_zarr
+level3_file = conf[classification].level3.fn_zarr
 
 # workflow = 'EUREC4A (VIS)'  # possible choices: 'EUREC4A (ICON; albedo)', 'EUREC4A (ICON; cloud liquid + ice)', 'EUREC4A (IR)', 'EUREC4A (VIS)']
 # workflow_dict = {'EUREC4A (IR)': 'IR',

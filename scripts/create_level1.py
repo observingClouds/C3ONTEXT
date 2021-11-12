@@ -33,16 +33,18 @@ from helpers import *
 
 g.setup_logging('INFO')
 
+classification = 'EUREC4A'
+
 # Path to zooniverse files
-clas_fn = conf.input.classifications_file
-subj_fn = conf.input.subjects_file
+clas_fn = conf[classification].input.classifications_file
+subj_fn = conf[classification].input.subjects_file
 
 # Level1 filename
-level1_file = conf.level1.fn_netcdf
+level1_file = conf[classification].level1.fn_netcdf
 
 # Define subject sets of interest
-subjs_of_interest = conf.setup.subjects_of_interest
-workfl_of_interest = conf.setup.workflows_of_interest
+subjs_of_interest = conf[classification].setup.subjects_of_interest
+workfl_of_interest = conf[classification].setup.workflows_of_interest
 
 try:
     from pyclouds import *
