@@ -163,4 +163,29 @@ ds_l1.already_seen.attrs['description'] = 'Flag wheather the user has seen the l
 
 ds_l1['already_seen'] = ds_l1.already_seen.astype(bool)
 
-ds_l1.to_netcdf(level1_file)
+variable_encoding = {
+                     'created_at': {'dtype': 'int32'},
+                     'started_at': {'dtype': 'uint32'},
+                     'finished_at': {'dtype': 'uint32'},
+                     'workflow_id': {'dtype': 'int16'},
+                     'classification_id': {'dtype': 'int32'},
+                     'index': {'dtype': 'int32'},
+                     'subject_ids': {'dtype': 'int32'},
+                     'date': {'dtype': 'int32'},
+                     'x': {'dtype': 'float'},
+                     'y': {'dtype': 'float'},
+                     'width': {'dtype': 'float'},
+                     'height': {'dtype': 'float'},
+                     'init_date': {'dtype': 'float'},
+                     'lon0': {'dtype': 'float'},
+                     'lat0': {'dtype': 'float'},
+                     'lon1': {'dtype': 'float'},
+                     'lat1': {'dtype': 'float'}
+                    }
+
+# Convert objects to integer (see https://github.com/pydata/xarray/issues/3149)
+ds_l1['workflow_id'] = ds_l1.workflow_id.astype(int)
+ds_l1['subject_ids'] = ds_l1.subject_ids.astype(int)
+ds_l1['classification_id'] = ds_l1.classification_id.astype(int)
+
+ds_l1.to_netcdf(level1_file, encoding=variable_encoding)
