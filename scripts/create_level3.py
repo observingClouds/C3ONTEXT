@@ -9,15 +9,6 @@ The output is an array with the dimensions
     dates x image_x x image_y x 4
 """
 
-# Level1 filename
-level1_file = '../processed_data/EUREC4A_ManualClassifications_l1.nc'
-
-# Level2 filename
-level2_file = '../processed_data/EUREC4A_ManualClassifications_MergedClassifications.zarr'
-
-# Level3 filename (output)
-level3_file = '../processed_data/EUREC4A_ManualClassifications_l3_{workflow}.zarr'
-
 # Define workflow and instrument combinations
 combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
           'VIS': {'workflow':'EUREC4A (VIS)', 'instrument': ['ABI', 'MODIS']},
@@ -26,8 +17,12 @@ combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
          }
 
 import sys
+
+# Load config
+from omegaconf import OmegaConf as oc
+conf = oc.load('config.yaml')
 # Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
-sys.path.append("/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassification/CloudClassificationDay/cloud-classification/")
+sys.path.append(conf.env.pyclouds)
 
 sys.path.append("../helpers/")
 
@@ -46,6 +41,15 @@ import general_helpers as g
 from helpers import *
 
 g.setup_logging('INFO')
+
+# Level1 filename
+level1_file = conf.level1.fn_netcdf
+
+# Level2 filename
+level2_file = conf.level2.fn_zarr
+
+# Level3 filename
+level3_file = conf.level3.fn_zarr
 
 # workflow = 'EUREC4A (VIS)'  # possible choices: 'EUREC4A (ICON; albedo)', 'EUREC4A (ICON; cloud liquid + ice)', 'EUREC4A (IR)', 'EUREC4A (VIS)']
 # workflow_dict = {'EUREC4A (IR)': 'IR',
@@ -100,9 +104,9 @@ for combo, combo_details in combos.items():
     freq = root_grp.create_dataset('freq', shape=(nb_dates, nb_lons, nb_lats, nb_patterns),
                                    chunks=(1, nb_lons, nb_lats, nb_patterns),
                                    dtype=float, compressor=zarr.Zlib(level=1))
-    dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(1),
+    dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(nb_dates),
                             dtype=int, compressor=zarr.Zlib(level=1))
-    nb_user = root_grp.create_dataset('nb_users', shape=(nb_dates), chunks=(1),
+    nb_user = root_grp.create_dataset('nb_users', shape=(nb_users), chunks=(nb_users),
                             dtype=int, compressor=zarr.Zlib(level=1))
     lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
                             dtype=float, compressor=zarr.Zlib(level=1))

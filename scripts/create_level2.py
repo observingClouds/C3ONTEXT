@@ -9,22 +9,13 @@ The output is an array with the dimensions
     classification_ids x image_x x image_y x 4
 """
 
-# Path to zooniverse files
-clas_fn = '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications.csv'
-subj_fn = '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv'
-
-# Level1 filename
-level1_file = '../processed_data/EUREC4A_ManualClassifications_l1.nc'
-
-# Level2 filename
-level2_file = '../processed_data/EUREC4A_ManualClassifications_MergedClassifications.zarr'
-
-# Define subject sets of interest
-subjs_of_interest = [81160, 81382, 80697, 80696]
-
 import sys
+from omegaconf import OmegaConf as oc
+
+# Load config
+conf = oc.load('config.yaml')
 # Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
-sys.path.append("/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassification/CloudClassificationDay/cloud-classification/")
+sys.path.append(conf.env.pyclouds)
 
 sys.path.append("../helpers/")
 
@@ -44,6 +35,13 @@ import general_helpers as g
 from helpers import *
 
 g.setup_logging('INFO')
+
+# Level1 filename
+level1_file = conf.level1.fn_netcdf
+
+# Level2 filename
+level2_file = conf.level2.fn_zarr
+
 
 try:
     git_module_version = subprocess.check_output(["git", "describe", "--dirty"]).strip().decode("utf-8")

@@ -9,20 +9,7 @@ This level1 dataset includes:
    - geographical coordinates are retrieved from pixel coordinates
 """
 
-# Path to zooniverse files
-clas_fn = '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications.csv'
-subj_fn = '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv'
-
-# Level1 filename
-level1_file = '../processed_data/EUREC4A_ManualClassifications_l1.nc'
-
-# Define subject sets of interest
-subjs_of_interest = [81160, 81382, 80697, 80696]
-
 import sys
-# Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
-sys.path.append("/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassification/CloudClassificationDay/cloud-classification/")
-
 sys.path.append("../helpers/")
 
 import os
@@ -30,14 +17,32 @@ import subprocess
 import time
 import tqdm
 import logging
+from omegaconf import OmegaConf as oc
 import numpy as np
 import pandas as pd
 import datetime as dt
 import xarray as xr
+
+# Load config
+conf = oc.load('config.yaml')
+# Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
+sys.path.append(conf.env.pyclouds)
+
 import general_helpers as g
 from helpers import *
 
 g.setup_logging('INFO')
+
+# Path to zooniverse files
+clas_fn = conf.input.classifications_file
+subj_fn = conf.input.subjects_file
+
+# Level1 filename
+level1_file = conf.level1.fn_netcdf
+
+# Define subject sets of interest
+subjs_of_interest = conf.setup.subjects_of_interest
+workfl_of_interest = conf.setup.workflows_of_interest
 
 try:
     from pyclouds import *
@@ -64,8 +69,8 @@ for workflow_name, df in data_combined.groupby('workflow_id'):
     print(workflow_name, np.unique(df.workflow_version))
 
 # based on aboves overview the following versions will be chosen
-version_dict = {13306: [21.18], 13309: [17.12], 13406: [14.16], 13496: [14.11]}
-data_combined = restrict_to_version(data_combined, version_dict)
+version_dict = {8073: [13.11], 8072: [24.13], 8414: [14.26], 13306: [21.18], 13309: [17.12], 13406: [14.16], 13496: [14.11]}
+data_combined = restrict_to_version(data_combined, version_dict, workfl_of_interest)
 
 # Make classifications and other data better accessable in the dataframe
 # by extracting values from dictionaries
@@ -78,8 +83,11 @@ logging.info('Extract metadata from filename')
 dates = np.empty(len(data_export),dtype=dt.datetime)
 init_dates = np.empty_like(dates)
 instruments = np.empty(len(data_export), dtype='object')
-for f,fn in enumerate(data_export.fn):
-    _dict = decode_filename_eurec4a(fn)
+for f, (fn, wf) in enumerate(zip(data_export.fn, data_export.workflow_id)):
+    if wf in [13306, 13309, 13406, 13496]:
+        _dict = decode_filename_eurec4a(fn)
+    elif wf in [8073, 8072, 8414]:
+        _dict = decode_filename_BAMS(fn)
     dates[f] = _dict['date']
     init_dates[f] = _dict['init_date']
     instruments[f] = _dict['instrument']
