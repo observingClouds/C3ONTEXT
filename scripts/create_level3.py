@@ -93,7 +93,7 @@ da_arr = ds_l2.mask
 nb_lats = len(da_arr.latitude)
 nb_lons = len(da_arr.longitude)
 nb_patterns = len(da_arr.pattern)
-nb_dates = len(df_l1.groupby(df_l1['date'].dt.date))
+nb_dates = len(df_l1.groupby(df_l1['date']))
 
 for combo, combo_details in combos.items():
     workflow = combo_details['workflow']
@@ -137,7 +137,7 @@ for combo, combo_details in combos.items():
         freq[d,:,:,:] = np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d]
 
     for d, (date, date_df) in enumerate(df_l1.groupby(df_l1['date'].dt.date)):
-        dates[d] = (date-dt.datetime(1970,1,1).date()).total_seconds()
+        dates[d] = (date-dt.datetime(1970,1,1)).total_seconds()
     lons[:] = da_arr.longitude.values  # np.linspace(-62,-40,nb_lons)
     lats[:] = da_arr.latitude.values  # np.linspace(20,5,nb_lats)
     patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
@@ -162,7 +162,7 @@ for combo, combo_details in combos.items():
 
     # Global attributes
     root_grp.attrs['title'] = 'EUREC4A: manual meso-scale cloud pattern classifications'
-    root_grp.attrs['description'] = 'Level-3: daily classification frequency'
+    root_grp.attrs['description'] = 'Level-3: instant classification frequency'
     root_grp.attrs['author'] = 'Hauke Schulz (hauke.schulz@mpimet.mpg.de)'
     root_grp.attrs['institute'] = 'Max Planck Institut für Meteorologie, Germany'
     root_grp.attrs['created_on'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M UTC')
