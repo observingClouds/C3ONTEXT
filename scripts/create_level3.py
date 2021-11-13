@@ -117,7 +117,7 @@ for combo, combo_details in combos.items():
     patterns = root_grp.create_dataset('pattern', shape=(nb_patterns), chunks=(nb_patterns),
                             dtype=str, compressor=zarr.Zlib(level=1))
 
-    for d, (date, date_df) in enumerate(tqdm.tqdm(df_l1.groupby(df_l1['date'].dt.date))):
+    for d, (date, date_df) in enumerate(tqdm.tqdm(df_l1.groupby(df_l1['date']))):
         date_arr = np.zeros((len(np.unique(date_df.user_name)),
                              nb_lons,
                              nb_lats,
@@ -136,7 +136,7 @@ for combo, combo_details in combos.items():
         nb_user[d] = len(np.unique(date_df_sel.user_name))
         freq[d,:,:,:] = np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d]
 
-    for d, (date, date_df) in enumerate(df_l1.groupby(df_l1['date'].dt.date)):
+    for d, (date, date_df) in enumerate(df_l1.groupby(df_l1['date'])):
         dates[d] = (date-dt.datetime(1970,1,1)).total_seconds()
     lons[:] = da_arr.longitude.values  # np.linspace(-62,-40,nb_lons)
     lats[:] = da_arr.latitude.values  # np.linspace(20,5,nb_lats)
