@@ -90,7 +90,7 @@ logging.info('Level2 data creation started')
 store = zarr.DirectoryStore(level2_file)
 root_grp = zarr.group(store, overwrite=True)
 mask = root_grp.create_dataset('mask', shape=(nb_classifications, nb_lons, nb_lats, nb_patterns),
-                               chunks=(10, 100, 100, 4),
+                               chunks=(10, 1100, 750, 4),
                                dtype="bool", encoding={"_FillValue":False}, compressor=Blosc(blocksize=0,clevel=9,cname="zstd",shuffle=Blosc.BITSHUFFLE))
 clas_ids = root_grp.create_dataset('classification_id', shape=(nb_classifications), chunks=(nb_classifications),
                         dtype="i4")
