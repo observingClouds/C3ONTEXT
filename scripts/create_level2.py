@@ -11,9 +11,28 @@ The output is an array with the dimensions
 
 import sys
 from omegaconf import OmegaConf as oc
+import argparse
+
+def get_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-c', '--configfile', help='Config file containing settings and paths for conversion', required=False, default='config.yaml')
+    parser.add_argument('-e', '--classification', help="Choose which classification of those described in the configfile should be used",
+                        required=True, default=None)
+
+    parser.add_argument('-v', '--verbose', metavar="DEBUG",
+                        help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
+                        required=False, default="INFO")
+
+    args = vars(parser.parse_args())
+
+    return args
+
+
+args = get_args()
+
 
 # Load config
-conf = oc.load('config.yaml')
+conf = oc.load(args['configfile'])
 # Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
 sys.path.append(conf.env.pyclouds)
 
@@ -36,7 +55,8 @@ from helpers import *
 
 g.setup_logging('INFO')
 
-classification = 'EUREC4A'
+classification = args['classification']
+
 
 # Level1 filename
 level1_file = conf[classification].level1.fn_netcdf
