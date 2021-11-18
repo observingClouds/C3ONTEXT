@@ -101,10 +101,6 @@ patterns = root_grp.create_dataset('pattern', shape=(nb_patterns), chunks=(nb_pa
                         dtype=str, compressor=zarr.Zlib(level=1))
 
 
-# z_arr = zarr.convenience.open(level2_file, mode='a',
-#               shape=(len(np.unique(df_l1.classification_id)), 2200, 1500, 4),
-#               chunks=(1, 2200, 1500, 4), dtype=bool)
-
 for b, box in enumerate(tqdm.tqdm(boxes_arr)):
     mask[b,:,:,:] = most_common_boxes(box,return_all_pattern=True,imag_dim=(nb_lons,nb_lats))
     
