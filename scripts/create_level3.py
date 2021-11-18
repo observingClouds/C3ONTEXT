@@ -58,7 +58,7 @@ from pyclouds import *
 import general_helpers as g
 from helpers import *
 
-g.setup_logging('INFO')
+g.setup_logging(args['verbose'])
 
 classification = args['classification']
 
