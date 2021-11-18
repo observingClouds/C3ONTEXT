@@ -49,6 +49,7 @@ import logging
 import dask.array as da
 import xarray as xr
 import zarr
+from numcodecs import Blosc
 from pyclouds import *
 import general_helpers as g
 from helpers import *
@@ -89,16 +90,16 @@ logging.info('Level2 data creation started')
 store = zarr.DirectoryStore(level2_file)
 root_grp = zarr.group(store, overwrite=True)
 mask = root_grp.create_dataset('mask', shape=(nb_classifications, nb_lons, nb_lats, nb_patterns),
-                               chunks=(1, nb_lons, nb_lats, nb_patterns),
-                               dtype=bool, compressor=zarr.Zlib(level=1))
+                               chunks=(10, 100, 100, 4),
+                               dtype="bool", encoding={"_FillValue":False}, compressor=Blosc(blocksize=0,clevel=9,cname="zstd",shuffle=Blosc.BITSHUFFLE))
 clas_ids = root_grp.create_dataset('classification_id', shape=(nb_classifications), chunks=(nb_classifications),
-                        dtype=int, compressor=zarr.Zlib(level=1))
+                        dtype="i4")
 lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
-                        dtype=float, compressor=zarr.Zlib(level=1))
+                        dtype="f4")
 lons = root_grp.create_dataset('longitude', shape=(nb_lons), chunks=(nb_lons),
-                        dtype=float, compressor=zarr.Zlib(level=1))
+                        dtype="f4")
 patterns = root_grp.create_dataset('pattern', shape=(nb_patterns), chunks=(nb_patterns),
-                        dtype=str, compressor=zarr.Zlib(level=1))
+                        dtype=str)
 
 
 for b, box in enumerate(tqdm.tqdm(boxes_arr)):
