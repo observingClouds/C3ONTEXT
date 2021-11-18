@@ -89,31 +89,31 @@ for c, (clas_id, clas_df) in enumerate(df_l1.groupby('classification_id')):
 logging.info('Level2 data creation started')
 store = zarr.DirectoryStore(level2_file)
 root_grp = zarr.group(store, overwrite=True)
-mask = root_grp.create_dataset('mask', shape=(nb_classifications, nb_lons, nb_lats, nb_patterns),
-                               chunks=(10, 100, 100, 4),
-                               dtype="bool", encoding={"_FillValue":False}, compressor=Blosc(blocksize=0,clevel=9,cname="zstd",shuffle=Blosc.BITSHUFFLE))
+mask = root_grp.create_dataset('mask', shape=(nb_classifications, nb_lons, nb_lats),
+                               chunks=(10, 1000, 1000),
+                               dtype="|i1", compressor=Blosc(blocksize=0,clevel=9,cname="zstd",shuffle=Blosc.BITSHUFFLE))
 clas_ids = root_grp.create_dataset('classification_id', shape=(nb_classifications), chunks=(nb_classifications),
                         dtype="i4")
 lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
                         dtype="f4")
 lons = root_grp.create_dataset('longitude', shape=(nb_lons), chunks=(nb_lons),
                         dtype="f4")
-patterns = root_grp.create_dataset('pattern', shape=(nb_patterns), chunks=(nb_patterns),
-                        dtype=str)
 
 
 for b, box in enumerate(tqdm.tqdm(boxes_arr)):
-    mask[b,:,:,:] = most_common_boxes(box,return_all_pattern=True,imag_dim=(nb_lons,nb_lats))
-    
+    mask_ = most_common_boxes(box,return_all_pattern=True,imag_dim=(nb_lons,nb_lats)).astype(int)*np.array([1,2,4,8])
+    mask[b,:,:] = np.sum(mask_,axis=-1)
+
 clas_ids[:] = np.unique(df_l1.classification_id)
 lons[:] = np.linspace(-62,-40,nb_lons)
 lats[:] = np.linspace(20,5,nb_lats)
-patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
 
 # Add attributes to file
 # Variable attributes
 mask.attrs['_ARRAY_DIMENSIONS'] = ('classification_id', 'longitude', 'latitude', 'pattern')
 mask.attrs['description'] = 'classification mask for every single pattern and classification_id'
+mask.attrs['flag_masks'] = [1,2,4,8]
+mask.attrs['flag_meanings'] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
 lons.attrs['_ARRAY_DIMENSIONS'] = ('longitude')
 lons.attrs['standard_name'] = 'longitude'
 lons.attrs['units'] = 'degree_east'
@@ -122,7 +122,6 @@ lats.attrs['standard_name'] = 'latitude'
 lats.attrs['units'] = 'degree_north'
 clas_ids.attrs['_ARRAY_DIMENSIONS'] = ('classification_id')
 clas_ids.attrs['description'] = 'classification id (basically each sighting of an image has a unique id)'
-patterns.attrs['_ARRAY_DIMENSIONS'] = ('pattern')
 
 # Global attributes
 root_grp.attrs['title'] = 'EUREC4A: manual meso-scale cloud pattern classifications'
