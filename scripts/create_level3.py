@@ -17,10 +17,28 @@ combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
          }
 
 import sys
+import argparse
+
+def get_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-c', '--configfile', help='Config file containing settings and paths for conversion', required=False, default='config.yaml')
+    parser.add_argument('-e', '--classification', help="Choose which classification of those described in the configfile should be used",
+                        required=True, default=None)
+
+    parser.add_argument('-v', '--verbose', metavar="DEBUG",
+                        help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
+                        required=False, default="INFO")
+
+    args = vars(parser.parse_args())
+
+    return args
+
+
+args = get_args()
 
 # Load config
 from omegaconf import OmegaConf as oc
-conf = oc.load('config.yaml')
+conf = oc.load(args['configfile'])
 # Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
 sys.path.append(conf.env.pyclouds)
 
@@ -36,13 +54,14 @@ import logging
 import dask.array as da
 import xarray as xr
 import zarr
+from numcodecs import Blosc, Delta
 from pyclouds import *
 import general_helpers as g
 from helpers import *
 
-g.setup_logging('INFO')
+g.setup_logging(args['verbose'])
 
-classification = 'EUREC4A'
+classification = args['classification']
 
 # Level1 filename
 level1_file = conf[classification].level1.fn_netcdf
@@ -95,6 +114,14 @@ nb_lons = len(da_arr.longitude)
 nb_patterns = len(da_arr.pattern)
 nb_dates = len(df_l1.groupby(df_l1['date']))
 
+def compute_scale_and_offset(min, max, n):
+    # stretch/compress data to the available packed range
+    scale_factor = (max - min) / (2 ** n - 1)
+    # translate the range to be symmetric about zero
+    add_offset = min + 2 ** (n - 1) * scale_factor
+    return (scale_factor, add_offset)
+scale_factor, add_offset = compute_scale_and_offset(0,1,8) 
+
 for combo, combo_details in combos.items():
     workflow = combo_details['workflow']
     instrument = combo_details['instrument']
@@ -104,12 +131,12 @@ for combo, combo_details in combos.items():
     store = zarr.DirectoryStore(level3_file.format(workflow=combo))
     root_grp = zarr.group(store, overwrite=True)
     freq = root_grp.create_dataset('freq', shape=(nb_dates, nb_lons, nb_lats, nb_patterns),
-                                   chunks=(1, nb_lons, nb_lats, nb_patterns),
-                                   dtype=float, compressor=zarr.Zlib(level=1))
+                                   chunks=(1, nb_lons//2, nb_lats//2, nb_patterns),
+                                   dtype="i4",fill_value=0,compressor=Blosc(cname='zstd', clevel=1, shuffle=Blosc.SHUFFLE))
     dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(nb_dates),
                             dtype=int, compressor=zarr.Zlib(level=1))
     nb_user = root_grp.create_dataset('nb_users', shape=(nb_dates), chunks=(nb_dates),
-                            dtype=int, compressor=zarr.Zlib(level=1))
+                            dtype="i4", fill_value=0)
     lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
                             dtype=float, compressor=zarr.Zlib(level=1))
     lons = root_grp.create_dataset('longitude', shape=(nb_lons), chunks=(nb_lons),
@@ -134,8 +161,8 @@ for combo, combo_details in combos.items():
             user_arr = np.where(user_arr>0, True, False)
             date_arr[u, :,:,:] = user_arr
         nb_user[d] = len(np.unique(date_df_sel.user_name))
-        freq[d,:,:,:] = np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d]
-
+#        freq[d,:,:,:] = np.floor((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])/scale_factor)
+        freq[d,:,:,:] = np.nan_to_num(np.round((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])*10000,0))
     for d, (date, date_df) in enumerate(df_l1.groupby(df_l1['date'])):
         dates[d] = (date-dt.datetime(1970,1,1)).total_seconds()
     lons[:] = da_arr.longitude.values  # np.linspace(-62,-40,nb_lons)
@@ -146,6 +173,7 @@ for combo, combo_details in combos.items():
     # Variable attributes
     freq.attrs['_ARRAY_DIMENSIONS'] = ('date', 'longitude', 'latitude', 'pattern')
     freq.attrs['description'] = 'classification frequency for every day'
+#    freq.attrs['scale_factor'] = scale_factor
     lons.attrs['_ARRAY_DIMENSIONS'] = ('longitude')
     lons.attrs['standard_name'] = 'longitude'
     lons.attrs['units'] = 'degree_east'
