@@ -10,6 +10,32 @@ This level1 dataset includes:
 """
 
 import sys
+from omegaconf import OmegaConf as oc
+import argparse
+
+def get_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-c', '--configfile', help='Config file containing settings and paths for conversion', required=False, default='config.yaml')
+    parser.add_argument('-e', '--classification', help="Choose which classification of those described in the configfile should be used",
+                        required=True, default=None)
+
+    parser.add_argument('-v', '--verbose', metavar="DEBUG",
+                        help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
+                        required=False, default="INFO")
+
+    args = vars(parser.parse_args())
+
+    return args
+
+
+args = get_args()
+
+
+# Load config
+conf = oc.load(args['configfile'])
+# Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
+sys.path.append(conf.env.pyclouds)
+
 sys.path.append("../helpers/")
 
 import os
@@ -17,23 +43,16 @@ import subprocess
 import time
 import tqdm
 import logging
-from omegaconf import OmegaConf as oc
 import numpy as np
 import pandas as pd
 import datetime as dt
 import xarray as xr
-
-# Load config
-conf = oc.load('config.yaml')
-# Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
-sys.path.append(conf.env.pyclouds)
-
 import general_helpers as g
 from helpers import *
 
-g.setup_logging('INFO')
+g.setup_logging(args['verbose'])
 
-classification = 'EUREC4A'
+classification = args['classification']
 
 # Path to zooniverse files
 clas_fn = conf[classification].input.classifications_file
