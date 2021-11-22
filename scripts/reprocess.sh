@@ -20,10 +20,10 @@
 python create_level1.py
 
 # Create level2 file
-python create_level2.py
+python create_level2.py -e EUREC4A
 
 # Create level3 files
-python create_level3.py
+python create_level3.py -e EUREC4A
 
 # Prepare data for zenodo upload
 bash create_zenodo_datazip.sh
