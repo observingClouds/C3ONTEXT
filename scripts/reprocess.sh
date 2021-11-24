@@ -23,7 +23,8 @@
 #python create_level2.py -e EUREC4A
 
 # Create level3 files
-python create_level3.py -e EUREC4A
+python create_level3.py -e EUREC4A -m instant
+python create_level3.py -e EUREC4A -m daily
 
 # Prepare data for zenodo upload
 bash create_zenodo_datazip.sh
