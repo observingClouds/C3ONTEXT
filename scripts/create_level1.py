@@ -207,4 +207,8 @@ ds_l1['workflow_id'] = ds_l1.workflow_id.astype(int)
 ds_l1['subject_ids'] = ds_l1.subject_ids.astype(int)
 ds_l1['classification_id'] = ds_l1.classification_id.astype(int)
 
+out_dir =  os.path.dirname(level1_file)
+if not os.path.exists(out_dir):
+    logging.info(f"Create output folder {out_dir}")
+    os.makedirs(out_dir)
 ds_l1.to_netcdf(level1_file, encoding=variable_encoding)
