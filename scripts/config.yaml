@@ -19,7 +19,7 @@ EUREC4A:
     fn_zarr: '../processed_data/EUREC4A_ManualClassifications_l2.zarr'
 
   level3:
-    fn_zarr: '../processed_data/EUREC4A_ManualClassifications_l3_{workflow}.zarr'
+    fn_zarr: '../processed_data/EUREC4A_ManualClassifications_l3_{workflow}_{mode}.zarr'
 
 BAMS:
   input:

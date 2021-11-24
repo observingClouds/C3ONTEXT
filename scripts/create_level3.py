@@ -24,7 +24,7 @@ def get_args():
     parser.add_argument('-c', '--configfile', help='Config file containing settings and paths for conversion', required=False, default='config.yaml')
     parser.add_argument('-e', '--classification', help="Choose which classification of those described in the configfile should be used",
                         required=True, default=None)
-
+    parser.add_argument('-m', '--mode', help='Instant or daily frequencies', required=False, default='instant')
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
                         required=False, default="INFO")
@@ -109,10 +109,15 @@ else:
 
 da_arr = ds_l2.mask
 
+if args["mode"] == "instant":
+    dates_groups = df_l1.groupby(df_l1['date'])
+elif args["mode"] == "daily":
+    dates_groups = df_l1.groupby(df_l1['date'].dt.date)
+
 nb_lats = len(da_arr.latitude)
 nb_lons = len(da_arr.longitude)
-nb_patterns = len(da_arr.pattern)
-nb_dates = len(df_l1.groupby(df_l1['date']))
+nb_patterns = 4 #len(da_arr.pattern)
+nb_dates = len(dates_groups)
 
 def compute_scale_and_offset(min, max, n):
     # stretch/compress data to the available packed range
@@ -128,7 +133,7 @@ for combo, combo_details in combos.items():
     logging.info('Workflow: {}, instrument: {}'.format(workflow, instrument))
 
     logging.info('Level3 data creation started')
-    store = zarr.DirectoryStore(level3_file.format(workflow=combo))
+    store = zarr.DirectoryStore(level3_file.format(workflow=combo, mode=args["mode"]))
     root_grp = zarr.group(store, overwrite=True)
     freq = root_grp.create_dataset('freq', shape=(nb_dates, nb_lons, nb_lats, nb_patterns),
                                    chunks=(1, nb_lons//2, nb_lats//2, nb_patterns),
@@ -144,7 +149,7 @@ for combo, combo_details in combos.items():
     patterns = root_grp.create_dataset('pattern', shape=(nb_patterns), chunks=(nb_patterns),
                             dtype=str, compressor=zarr.Zlib(level=1))
 
-    for d, (date, date_df) in enumerate(tqdm.tqdm(df_l1.groupby(df_l1['date']))):
+    for d, (date, date_df) in enumerate(tqdm.tqdm(dates_groups)):
         date_arr = np.zeros((len(np.unique(date_df.user_name)),
                              nb_lons,
                              nb_lats,
@@ -157,14 +162,25 @@ for combo, combo_details in combos.items():
         for u, (user_name, user_df) in enumerate(date_df_sel.groupby('user_name')):
             class_ids = user_df.classification_id
             class_ids = np.unique(class_ids)
-            user_arr = da_arr.sel({'classification_id':class_ids}).sum(axis=0).compute()
-            user_arr = np.where(user_arr>0, True, False)
+            user_arr_ = da_arr.sel({'classification_id':class_ids})
+            user_arr = np.bitwise_and(user_arr_.expand_dims({'pattern':4},3).fillna(0).astype(int).values, np.array([1,2,4,8])[np.newaxis,np.newaxis,np.newaxis,:]).astype('bool')
+
+            user_arr = np.any(user_arr,axis=0)  # along classification_id
+            #user_arr = np.where(user_arr>0, True, False)
+            
             date_arr[u, :,:,:] = user_arr
+
+            #for p in range(4):
+            #    date_arr[u, :,:,p] = user_arr_.where(user_arr_ == 2**p).any(dim='classification_id').compute()
         nb_user[d] = len(np.unique(date_df_sel.user_name))
 #        freq[d,:,:,:] = np.floor((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])/scale_factor)
         freq[d,:,:,:] = np.nan_to_num(np.round((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])*10000,0))
-    for d, (date, date_df) in enumerate(df_l1.groupby(df_l1['date'])):
-        dates[d] = (date-dt.datetime(1970,1,1)).total_seconds()
+    if args["mode"] == "instant":
+        reference = dt.datetime(1970,1,1)
+    elif args["mode"] == "daily":
+        reference = dt.datetime(1970,1,1).date()
+    for d, (date, date_df) in enumerate(dates_groups):
+        dates[d] = (date-reference).total_seconds()
     lons[:] = da_arr.longitude.values  # np.linspace(-62,-40,nb_lons)
     lats[:] = da_arr.latitude.values  # np.linspace(20,5,nb_lats)
     patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
@@ -190,7 +206,10 @@ for combo, combo_details in combos.items():
 
     # Global attributes
     root_grp.attrs['title'] = 'EUREC4A: manual meso-scale cloud pattern classifications'
-    root_grp.attrs['description'] = 'Level-3: instant classification frequency'
+    if args["mode"] == "instant":
+        root_grp.attrs['description'] = 'Level-3: instant classification frequency'
+    elif args["mode"] == "daily":
+        root_grp.attrs['description'] = 'Level-3: daily classification frequency'
     root_grp.attrs['author'] = 'Hauke Schulz (hauke.schulz@mpimet.mpg.de)'
     root_grp.attrs['institute'] = 'Max Planck Institut für Meteorologie, Germany'
     root_grp.attrs['created_on'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M UTC')
