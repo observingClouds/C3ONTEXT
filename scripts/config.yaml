@@ -1,6 +1,6 @@
 classifications : ['BAMS', 'EUREC4A']
 env:
-  pyclouds: '/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassification/CloudClassificationDay/cloud-classification/'
+  pyclouds: '/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/scripts/'
 
 
 EUREC4A:
