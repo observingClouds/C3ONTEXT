@@ -14,7 +14,10 @@ def add_subject_set_id_to_clas_df(clas_df, subj_df, subjs_of_interest):
         lambda i: s.loc[i].subject_set_id if i in list(s.index) else np.nan)
     clas_df.dropna(subset=['subject_set_id'], inplace=True)
     # Also add filename
-    filenames = clas_df.subject_ids.apply(lambda i: os.path.basename(s.loc[i].metadata['file']))
+    try:
+        filenames = clas_df.subject_ids.apply(lambda i: os.path.basename(s.loc[i].metadata['file']))
+    except KeyError:
+        filenames = clas_df.subject_ids.apply(lambda i: os.path.basename(s.loc[i].metadata['fn']))
     clas_df['fn'] = filenames
     return clas_df
 
@@ -31,12 +34,12 @@ def clean_tool_label(label):
         return None
 
 
-def restrict_to_version(clas_df, version_dict):
+def restrict_to_version(clas_df, version_dict, workfl_of_interest):
     """
     Remove classifications from certain workflow
     that do not have the requested version number.
     """
-    mask = clas_df.apply(lambda i: i.workflow_version in version_dict[i.workflow_id], axis=1)
+    mask = clas_df.apply(lambda i: (i.workflow_version in version_dict[i.workflow_id]) and (i.workflow_id in workfl_of_interest), axis=1)
     clas_df = clas_df.drop(clas_df.loc[~mask].index)
     return clas_df
 
@@ -108,11 +111,14 @@ def convert_clas_to_annos_df(clas_df):
                 annos_df.iloc[j][coord] = anno[coord]
             for meta in ['started_at', 'finished_at']:
                 annos_df.iloc[j][meta] = row.metadata[meta]
-            annos_df.iloc[j]['already_seen'] = row.metadata['subject_selection_state']['already_seen']
+            try:
+                annos_df.iloc[j]['already_seen'] = row.metadata['subject_selection_state']['already_seen']
+            except KeyError:
+                print("No subject_selection_state in input file. Skip information about already_seen")
             j += 1
     # Convert start and finish times to datetime
     for meta in ['started_at', 'finished_at', 'created_at']:
-        annos_df[meta] = pd.to_datetime(annos_df[meta])
+        annos_df[meta] = pd.to_datetime(annos_df[meta]).dt.tz_localize(None)
     return annos_df
 
 
@@ -152,6 +158,30 @@ def decode_filename_eurec4a(filename):
     return return_dict
 
 
+def decode_filename_BAMS(filename):
+    """
+    Decode filenames of the initial workflows published in BAMS
+    """
+    return_dict = {}
+    basename = filename.split('/')[-1]
+    basename_spl = basename.split('_')
+    if 'Aqua' in basename:
+        return_dict['platform'] = 'Aqua'
+        return_dict['instrument'] = 'MODIS'
+        return_dict['channel'] = 'CorrectedReflectance'
+        return_dict['date'] = dt.datetime.strptime(basename_spl[1], "CorrectedReflectance%Y%m%d")
+        return_dict['init_date'] = pd.NaT
+    elif 'Terra' in basename:
+        return_dict['platform'] = 'Terra'
+        return_dict['instrument'] = 'MODIS'
+        return_dict['channel'] = 'CorrectedReflectance'
+        return_dict['date'] = dt.datetime.strptime(basename_spl[1], "CorrectedReflectance%Y%m%d")
+        return_dict['init_date'] = pd.NaT
+    else:
+        print(basename)
+        raise ValueError(basename)
+    return return_dict
+
 def rle (binary_mask,return_str=True):
     """
     Fast run length encoding
@@ -180,7 +210,7 @@ def most_common_boxes(boxes, visualize=False, return_all_pattern=False, imag_dim
     Combine most common boxes of one image
     into one grid
     """
-    pattern_dic = {'Sugar': 0, 'Flower': 1, 'Fish': 2, 'Gravel': 3}
+    pattern_dic = {'Sugar': 0, 'Flower': 1, 'Fish': 2, 'Gravel': 3, 'Sug': 0, 'Flow': 1, 'Fi': 2, 'Grav': 3}
     
     grid = np.zeros((imag_dim[0],imag_dim[1],4),dtype="int")
     for b,box in enumerate(boxes):

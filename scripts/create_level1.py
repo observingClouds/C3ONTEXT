@@ -9,19 +9,32 @@ This level1 dataset includes:
    - geographical coordinates are retrieved from pixel coordinates
 """
 
-# Path to zooniverse files
-clas_fn = '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications.csv'
-subj_fn = '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv'
-
-# Level1 filename
-level1_file = '../processed_data/EUREC4A_ManualClassifications_l1.nc'
-
-# Define subject sets of interest
-subjs_of_interest = [81160, 81382, 80697, 80696]
-
 import sys
+from omegaconf import OmegaConf as oc
+import argparse
+
+def get_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-c', '--configfile', help='Config file containing settings and paths for conversion', required=False, default='config.yaml')
+    parser.add_argument('-e', '--classification', help="Choose which classification of those described in the configfile should be used",
+                        required=True, default=None)
+
+    parser.add_argument('-v', '--verbose', metavar="DEBUG",
+                        help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
+                        required=False, default="INFO")
+
+    args = vars(parser.parse_args())
+
+    return args
+
+
+args = get_args()
+
+
+# Load config
+conf = oc.load(args['configfile'])
 # Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
-sys.path.append("/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassification/CloudClassificationDay/cloud-classification/")
+sys.path.append(conf.env.pyclouds)
 
 sys.path.append("../helpers/")
 
@@ -37,7 +50,20 @@ import xarray as xr
 import general_helpers as g
 from helpers import *
 
-g.setup_logging('INFO')
+g.setup_logging(args['verbose'])
+
+classification = args['classification']
+
+# Path to zooniverse files
+clas_fn = conf[classification].input.classifications_file
+subj_fn = conf[classification].input.subjects_file
+
+# Level1 filename
+level1_file = conf[classification].level1.fn_netcdf
+
+# Define subject sets of interest
+subjs_of_interest = conf[classification].setup.subjects_of_interest
+workfl_of_interest = conf[classification].setup.workflows_of_interest
 
 try:
     from pyclouds import *
@@ -64,8 +90,8 @@ for workflow_name, df in data_combined.groupby('workflow_id'):
     print(workflow_name, np.unique(df.workflow_version))
 
 # based on aboves overview the following versions will be chosen
-version_dict = {13306: [21.18], 13309: [17.12], 13406: [14.16], 13496: [14.11]}
-data_combined = restrict_to_version(data_combined, version_dict)
+version_dict = {8073: [13.11], 8072: [24.13], 8414: [14.26], 13306: [21.18], 13309: [17.12], 13406: [14.16], 13496: [14.11]}
+data_combined = restrict_to_version(data_combined, version_dict, workfl_of_interest)
 
 # Make classifications and other data better accessable in the dataframe
 # by extracting values from dictionaries
@@ -78,8 +104,11 @@ logging.info('Extract metadata from filename')
 dates = np.empty(len(data_export),dtype=dt.datetime)
 init_dates = np.empty_like(dates)
 instruments = np.empty(len(data_export), dtype='object')
-for f,fn in enumerate(data_export.fn):
-    _dict = decode_filename_eurec4a(fn)
+for f, (fn, wf) in enumerate(zip(data_export.fn, data_export.workflow_id)):
+    if wf in [13306, 13309, 13406, 13496]:
+        _dict = decode_filename_eurec4a(fn)
+    elif wf in [8073, 8072, 8414]:
+        _dict = decode_filename_BAMS(fn)
     dates[f] = _dict['date']
     init_dates[f] = _dict['init_date']
     instruments[f] = _dict['instrument']
@@ -153,4 +182,33 @@ ds_l1.already_seen.attrs['description'] = 'Flag wheather the user has seen the l
 
 ds_l1['already_seen'] = ds_l1.already_seen.astype(bool)
 
-ds_l1.to_netcdf(level1_file)
+variable_encoding = {
+                     'created_at': {'dtype': 'int32'},
+                     'started_at': {'dtype': 'uint32'},
+                     'finished_at': {'dtype': 'uint32'},
+                     'workflow_id': {'dtype': 'int16'},
+                     'classification_id': {'dtype': 'int32'},
+                     'index': {'dtype': 'int32'},
+                     'subject_ids': {'dtype': 'int32'},
+                     'date': {'dtype': 'int32'},
+                     'x': {'dtype': 'float'},
+                     'y': {'dtype': 'float'},
+                     'width': {'dtype': 'float'},
+                     'height': {'dtype': 'float'},
+                     'init_date': {'dtype': 'float'},
+                     'lon0': {'dtype': 'float'},
+                     'lat0': {'dtype': 'float'},
+                     'lon1': {'dtype': 'float'},
+                     'lat1': {'dtype': 'float'}
+                    }
+
+# Convert objects to integer (see https://github.com/pydata/xarray/issues/3149)
+ds_l1['workflow_id'] = ds_l1.workflow_id.astype(int)
+ds_l1['subject_ids'] = ds_l1.subject_ids.astype(int)
+ds_l1['classification_id'] = ds_l1.classification_id.astype(int)
+
+out_dir =  os.path.dirname(level1_file)
+if not os.path.exists(out_dir):
+    logging.info(f"Create output folder {out_dir}")
+    os.makedirs(out_dir)
+ds_l1.to_netcdf(level1_file, encoding=variable_encoding)

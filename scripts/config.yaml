@@ -1,0 +1,41 @@
+classifications : ['BAMS', 'EUREC4A']
+env:
+  pyclouds: '/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/scripts/'
+
+
+EUREC4A:
+  input:
+    subjects_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv'
+    classifications_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications.csv'
+
+  setup:
+    workflows_of_interest: [13306, 13309, 13406]
+    subjects_of_interest: [81160, 81382, 80697, 80696]
+
+  level1:
+    fn_netcdf: '../processed_data/EUREC4A_ManualClassifications_l1.nc'
+  
+  level2:
+    fn_zarr: '../processed_data/EUREC4A_ManualClassifications_l2.zarr'
+
+  level3:
+    fn_zarr: '../processed_data/EUREC4A_ManualClassifications_l3_{workflow}_{mode}.zarr'
+
+BAMS:
+  input:
+    subjects_file: '../zooniverse_raw/zooniverse_raw/sugar-flower-fish-or-gravel-subjects_19_01_14.csv'
+    classifications_file: '../zooniverse_raw/zooniverse_raw/sugar-flower-fish-or-gravel-classifications_18_12_16.csv'
+
+  setup:
+    workflows_of_interest: [8072, 8073]
+    subjects_of_interest: [60811, 60812, 60813, 60814] #, 60815, 60816, 60817, 60818, 60819, 60835
+
+  level1:
+    fn_netcdf: '../processed_data/BAMS_ManualClassifications_l1.nc'
+
+  level2:
+    fn_zarr: '../processed_data/BAMS_ManualClassifications_MergedClassifications.zarr'
+
+  level3:
+    fn_zarr: '../processed_data/BAMS_ManualClassifications_l3_{workflow}.zarr'
+

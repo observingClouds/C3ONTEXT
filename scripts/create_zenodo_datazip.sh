@@ -4,9 +4,9 @@
 python anonymize_data.py
 
 ## Zip data
-zip -r -D ../processed_data/EUREC4A_ManualClassifications_MergedClassifications.zarr.zip ../processed_data/EUREC4A_ManualClassifications_MergedClassifications.zarr
-zip -r -D ../processed_data/EUREC4A_ManualClassifications_l3_IR.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l3_IR.zarr
-zip -r -D ../processed_data/EUREC4A_ManualClassifications_l3_VIS.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l3_VIS.zarr
-zip -r -D ../processed_data/EUREC4A_ManualClassifications_l3_albedo.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l3_albedo.zarr
+cd ../
 
-zip -D ../zenodo/EUREC4A_ManualCloudClassificationData.zip ../processed_data/EUREC4A_ManualClassifications_MergedClassifications.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l3_VIS.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l3_IR.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l3_albedo.zarr.zip ../processed_data/EUREC4A_ManualClassifications_l1_anonymized.nc ../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv ../zooniverse_raw/sugar-flower-fish-or-gravel-classifications_anonymized.csv
+mkdir zenodo
+
+zip -r -D zenodo/EUREC4A_ManualCloudClassificationData.zip processed_data/EUREC4A_ManualClassifications_l2.zarr processed_data/EUREC4A_ManualClassifications_l3_VIS_instant.zarr processed_data/EUREC4A_ManualClassifications_l3_VIS_daily.zarr processed_data/EUREC4A_ManualClassifications_l3_IR_instant.zarr processed_data/EUREC4A_ManualClassifications_l3_IR_daily.zarr processed_data/EUREC4A_ManualClassifications_l3_albedo_instant.zarr processed_data/EUREC4A_ManualClassifications_l3_albedo_daily.zarr processed_data/EUREC4A_ManualClassifications_l1_anonymized.nc zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv zooniverse_raw/sugar-flower-fish-or-gravel-classifications_anonymized.csv
+

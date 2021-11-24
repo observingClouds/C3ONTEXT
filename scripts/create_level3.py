@@ -9,15 +9,6 @@ The output is an array with the dimensions
     dates x image_x x image_y x 4
 """
 
-# Level1 filename
-level1_file = '../processed_data/EUREC4A_ManualClassifications_l1.nc'
-
-# Level2 filename
-level2_file = '../processed_data/EUREC4A_ManualClassifications_MergedClassifications.zarr'
-
-# Level3 filename (output)
-level3_file = '../processed_data/EUREC4A_ManualClassifications_l3_{workflow}.zarr'
-
 # Define workflow and instrument combinations
 combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
           'VIS': {'workflow':'EUREC4A (VIS)', 'instrument': ['ABI', 'MODIS']},
@@ -26,8 +17,30 @@ combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
          }
 
 import sys
+import argparse
+
+def get_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-c', '--configfile', help='Config file containing settings and paths for conversion', required=False, default='config.yaml')
+    parser.add_argument('-e', '--classification', help="Choose which classification of those described in the configfile should be used",
+                        required=True, default=None)
+    parser.add_argument('-m', '--mode', help='Instant or daily frequencies', required=False, default='instant')
+    parser.add_argument('-v', '--verbose', metavar="DEBUG",
+                        help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
+                        required=False, default="INFO")
+
+    args = vars(parser.parse_args())
+
+    return args
+
+
+args = get_args()
+
+# Load config
+from omegaconf import OmegaConf as oc
+conf = oc.load(args['configfile'])
 # Path to pycloud folder (https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/pyclouds)
-sys.path.append("/Users/haukeschulz/Documents/PhD/Work/Own/AI_CloudClassification/CloudClassificationDay/cloud-classification/")
+sys.path.append(conf.env.pyclouds)
 
 sys.path.append("../helpers/")
 
@@ -41,11 +54,23 @@ import logging
 import dask.array as da
 import xarray as xr
 import zarr
+from numcodecs import Blosc, Delta
 from pyclouds import *
 import general_helpers as g
 from helpers import *
 
-g.setup_logging('INFO')
+g.setup_logging(args['verbose'])
+
+classification = args['classification']
+
+# Level1 filename
+level1_file = conf[classification].level1.fn_netcdf
+
+# Level2 filename
+level2_file = conf[classification].level2.fn_zarr
+
+# Level3 filename
+level3_file = conf[classification].level3.fn_zarr
 
 # workflow = 'EUREC4A (VIS)'  # possible choices: 'EUREC4A (ICON; albedo)', 'EUREC4A (ICON; cloud liquid + ice)', 'EUREC4A (IR)', 'EUREC4A (VIS)']
 # workflow_dict = {'EUREC4A (IR)': 'IR',
@@ -84,10 +109,23 @@ else:
 
 da_arr = ds_l2.mask
 
+if args["mode"] == "instant":
+    dates_groups = df_l1.groupby(df_l1['date'])
+elif args["mode"] == "daily":
+    dates_groups = df_l1.groupby(df_l1['date'].dt.date)
+
 nb_lats = len(da_arr.latitude)
 nb_lons = len(da_arr.longitude)
-nb_patterns = len(da_arr.pattern)
-nb_dates = len(df_l1.groupby(df_l1['date'].dt.date))
+nb_patterns = 4 #len(da_arr.pattern)
+nb_dates = len(dates_groups)
+
+def compute_scale_and_offset(min, max, n):
+    # stretch/compress data to the available packed range
+    scale_factor = (max - min) / (2 ** n - 1)
+    # translate the range to be symmetric about zero
+    add_offset = min + 2 ** (n - 1) * scale_factor
+    return (scale_factor, add_offset)
+scale_factor, add_offset = compute_scale_and_offset(0,1,8) 
 
 for combo, combo_details in combos.items():
     workflow = combo_details['workflow']
@@ -95,15 +133,15 @@ for combo, combo_details in combos.items():
     logging.info('Workflow: {}, instrument: {}'.format(workflow, instrument))
 
     logging.info('Level3 data creation started')
-    store = zarr.DirectoryStore(level3_file.format(workflow=combo))
+    store = zarr.DirectoryStore(level3_file.format(workflow=combo, mode=args["mode"]))
     root_grp = zarr.group(store, overwrite=True)
     freq = root_grp.create_dataset('freq', shape=(nb_dates, nb_lons, nb_lats, nb_patterns),
                                    chunks=(1, nb_lons, nb_lats, nb_patterns),
-                                   dtype=float, compressor=zarr.Zlib(level=1))
-    dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(1),
+                                   dtype="i4",fill_value=0,compressor=Blosc(cname='zstd', clevel=1, shuffle=Blosc.SHUFFLE))
+    dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(nb_dates),
                             dtype=int, compressor=zarr.Zlib(level=1))
-    nb_user = root_grp.create_dataset('nb_users', shape=(nb_dates), chunks=(1),
-                            dtype=int, compressor=zarr.Zlib(level=1))
+    nb_user = root_grp.create_dataset('nb_users', shape=(nb_dates), chunks=(nb_dates),
+                            dtype="i4", fill_value=0)
     lats = root_grp.create_dataset('latitude', shape=(nb_lats), chunks=(nb_lats),
                             dtype=float, compressor=zarr.Zlib(level=1))
     lons = root_grp.create_dataset('longitude', shape=(nb_lons), chunks=(nb_lons),
@@ -111,7 +149,7 @@ for combo, combo_details in combos.items():
     patterns = root_grp.create_dataset('pattern', shape=(nb_patterns), chunks=(nb_patterns),
                             dtype=str, compressor=zarr.Zlib(level=1))
 
-    for d, (date, date_df) in enumerate(tqdm.tqdm(df_l1.groupby(df_l1['date'].dt.date))):
+    for d, (date, date_df) in enumerate(tqdm.tqdm(dates_groups)):
         date_arr = np.zeros((len(np.unique(date_df.user_name)),
                              nb_lons,
                              nb_lats,
@@ -124,14 +162,25 @@ for combo, combo_details in combos.items():
         for u, (user_name, user_df) in enumerate(date_df_sel.groupby('user_name')):
             class_ids = user_df.classification_id
             class_ids = np.unique(class_ids)
-            user_arr = da_arr.sel({'classification_id':class_ids}).sum(axis=0).compute()
-            user_arr = np.where(user_arr>0, True, False)
-            date_arr[u, :,:,:] = user_arr
-        nb_user[d] = len(np.unique(date_df_sel.user_name))
-        freq[d,:,:,:] = np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d]
+            user_arr_ = da_arr.sel({'classification_id':class_ids})
+            user_arr = np.bitwise_and(user_arr_.expand_dims({'pattern':4},3).fillna(0).astype(int).values, np.array([1,2,4,8])[np.newaxis,np.newaxis,np.newaxis,:]).astype('bool')
 
-    for d, (date, date_df) in enumerate(df_l1.groupby(df_l1['date'].dt.date)):
-        dates[d] = (date-dt.datetime(1970,1,1).date()).total_seconds()
+            user_arr = np.any(user_arr,axis=0)  # along classification_id
+            #user_arr = np.where(user_arr>0, True, False)
+            
+            date_arr[u, :,:,:] = user_arr
+
+            #for p in range(4):
+            #    date_arr[u, :,:,p] = user_arr_.where(user_arr_ == 2**p).any(dim='classification_id').compute()
+        nb_user[d] = len(np.unique(date_df_sel.user_name))
+#        freq[d,:,:,:] = np.floor((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])/scale_factor)
+        freq[d,:,:,:] = np.nan_to_num(np.round((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])*10000,0))
+    if args["mode"] == "instant":
+        reference = dt.datetime(1970,1,1)
+    elif args["mode"] == "daily":
+        reference = dt.datetime(1970,1,1).date()
+    for d, (date, date_df) in enumerate(dates_groups):
+        dates[d] = (date-reference).total_seconds()
     lons[:] = da_arr.longitude.values  # np.linspace(-62,-40,nb_lons)
     lats[:] = da_arr.latitude.values  # np.linspace(20,5,nb_lats)
     patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
@@ -140,6 +189,7 @@ for combo, combo_details in combos.items():
     # Variable attributes
     freq.attrs['_ARRAY_DIMENSIONS'] = ('date', 'longitude', 'latitude', 'pattern')
     freq.attrs['description'] = 'classification frequency for every day'
+    freq.attrs['scale_factor'] = 1/10000
     lons.attrs['_ARRAY_DIMENSIONS'] = ('longitude')
     lons.attrs['standard_name'] = 'longitude'
     lons.attrs['units'] = 'degree_east'
@@ -156,7 +206,10 @@ for combo, combo_details in combos.items():
 
     # Global attributes
     root_grp.attrs['title'] = 'EUREC4A: manual meso-scale cloud pattern classifications'
-    root_grp.attrs['description'] = 'Level-3: daily classification frequency'
+    if args["mode"] == "instant":
+        root_grp.attrs['description'] = 'Level-3: instant classification frequency'
+    elif args["mode"] == "daily":
+        root_grp.attrs['description'] = 'Level-3: daily classification frequency'
     root_grp.attrs['author'] = 'Hauke Schulz (hauke.schulz@mpimet.mpg.de)'
     root_grp.attrs['institute'] = 'Max Planck Institut für Meteorologie, Germany'
     root_grp.attrs['created_on'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M UTC')
