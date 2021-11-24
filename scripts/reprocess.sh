@@ -17,10 +17,10 @@
 # Save download to /zooniverse_raw
 
 # Create level1 file
-python create_level1.py
+#python create_level1.py -e EUREC4A
 
 # Create level2 file
-python create_level2.py -e EUREC4A
+#python create_level2.py -e EUREC4A
 
 # Create level3 files
 python create_level3.py -e EUREC4A
