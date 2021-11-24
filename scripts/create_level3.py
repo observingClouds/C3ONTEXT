@@ -136,7 +136,7 @@ for combo, combo_details in combos.items():
     store = zarr.DirectoryStore(level3_file.format(workflow=combo, mode=args["mode"]))
     root_grp = zarr.group(store, overwrite=True)
     freq = root_grp.create_dataset('freq', shape=(nb_dates, nb_lons, nb_lats, nb_patterns),
-                                   chunks=(1, nb_lons//2, nb_lats//2, nb_patterns),
+                                   chunks=(1, nb_lons, nb_lats, nb_patterns),
                                    dtype="i4",fill_value=0,compressor=Blosc(cname='zstd', clevel=1, shuffle=Blosc.SHUFFLE))
     dates = root_grp.create_dataset('date', shape=(nb_dates), chunks=(nb_dates),
                             dtype=int, compressor=zarr.Zlib(level=1))
@@ -189,7 +189,7 @@ for combo, combo_details in combos.items():
     # Variable attributes
     freq.attrs['_ARRAY_DIMENSIONS'] = ('date', 'longitude', 'latitude', 'pattern')
     freq.attrs['description'] = 'classification frequency for every day'
-#    freq.attrs['scale_factor'] = scale_factor
+    freq.attrs['scale_factor'] = 1/10000
     lons.attrs['_ARRAY_DIMENSIONS'] = ('longitude')
     lons.attrs['standard_name'] = 'longitude'
     lons.attrs['units'] = 'degree_east'
