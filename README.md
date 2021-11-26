@@ -1,5 +1,5 @@
-# EUREC<sup>4</sup>A_manualclassifications
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3888876.svg)](https://doi.org/10.5281/zenodo.3888876)
+# C³ONTEXT: A Common Consensus on Convective OrgaNizaTion during the EUREC⁴A eXperimenT
+Data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3763351.svg)](https://doi.org/10.5281/zenodo.3763351)
 
 This repository includes the source code for the post-processing of the manual cloud classifications
 that have been gathered during an online hackathon with international scientists in March 2020.
