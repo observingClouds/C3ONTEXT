@@ -7,6 +7,7 @@ EUREC4A:
   input:
     subjects_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv'
     classifications_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications.csv'
+    classifications_file_anonymous: '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications_anonymized.csv'
 
   setup:
     workflows_of_interest: [13306, 13309, 13406]
@@ -14,7 +15,8 @@ EUREC4A:
 
   level1:
     fn_netcdf: '../processed_data/EUREC4A_ManualClassifications_l1.nc'
-  
+    fn_netcdf_anonymous: '../processed_data/EUREC4A_ManualClassifications_l1_anonymized.nc'
+
   level2:
     fn_zarr: '../processed_data/EUREC4A_ManualClassifications_l2.zarr'
 
@@ -23,8 +25,9 @@ EUREC4A:
 
 BAMS:
   input:
-    subjects_file: '../zooniverse_raw/zooniverse_raw/sugar-flower-fish-or-gravel-subjects_19_01_14.csv'
-    classifications_file: '../zooniverse_raw/zooniverse_raw/sugar-flower-fish-or-gravel-classifications_18_12_16.csv'
+    subjects_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects_19_01_14.csv'
+    classifications_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications_18_12_16.csv'
+    classifications_file_anonymous: '../zooniverse_raw/BAMS_sugar-flower-fish-or-gravel-classifications_anonymized.csv'
 
   setup:
     workflows_of_interest: [8072, 8073]
@@ -32,10 +35,11 @@ BAMS:
 
   level1:
     fn_netcdf: '../processed_data/BAMS_ManualClassifications_l1.nc'
+    fn_netcdf_anonymous: '../processed_data/BAMS_ManualClassifications_l1_anonymized.nc'
 
   level2:
-    fn_zarr: '../processed_data/BAMS_ManualClassifications_MergedClassifications.zarr'
+    fn_zarr: '../processed_data/BAMS_ManualClassifications_l2.zarr'
 
   level3:
-    fn_zarr: '../processed_data/BAMS_ManualClassifications_l3_{workflow}.zarr'
+    fn_zarr: '../processed_data/BAMS_ManualClassifications_l3_{workflow}_{mode}.zarr'
 
