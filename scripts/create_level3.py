@@ -188,7 +188,7 @@ for combo, combo_details in combos.items():
     # Add attributes to file
     # Variable attributes
     freq.attrs['_ARRAY_DIMENSIONS'] = ('date', 'longitude', 'latitude', 'pattern')
-    freq.attrs['description'] = 'classification frequency for every day'
+    freq.attrs['description'] = f'{mode} classification frequency'
     freq.attrs['scale_factor'] = 1/10000
     lons.attrs['_ARRAY_DIMENSIONS'] = ('longitude')
     lons.attrs['standard_name'] = 'longitude'
@@ -205,7 +205,7 @@ for combo, combo_details in combos.items():
     nb_user.attrs['description'] = 'number of users that saw this image/dataset'
 
     # Global attributes
-    root_grp.attrs['title'] = 'EUREC4A: manual meso-scale cloud pattern classifications'
+    root_grp.attrs['title'] = f'{classification}: manual meso-scale cloud pattern classifications'
     if args["mode"] == "instant":
         root_grp.attrs['description'] = 'Level-3: instant classification frequency'
     elif args["mode"] == "daily":
