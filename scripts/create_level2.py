@@ -134,4 +134,5 @@ root_grp.attrs['created_with'] = os.path.basename(__file__) + " with its last mo
 root_grp.attrs['version'] = git_module_version
 root_grp.attrs['python_version'] = "{}".format(sys.version)
 
+zarr.consolidate_metadata(store)
 logging.info('Level2 data creation completed')

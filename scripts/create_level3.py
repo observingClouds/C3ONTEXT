@@ -205,4 +205,6 @@ for combo, combo_details in combos.items():
     root_grp.attrs['version'] = git_module_version
     root_grp.attrs['python_version'] = "{}".format(sys.version)
 
+    zarr.consolidate_metadata(store)
+
     logging.info('Level3 data creation completed')
