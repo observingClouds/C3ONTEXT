@@ -19,7 +19,7 @@
 #   sbatch reprocess.sh BAMS
 #   sbatch reprocess.sh EUREC4A
 
-classifications=$1
+classification=$1
 
 # Download satellite data
 # python download_datdata.py
@@ -38,15 +38,15 @@ classifications=$1
 module load python3/2021.01-gcc-9.1.0 # this is specific to the DKRZ mistral cluster
 
 # Create level1 file
-#python create_level1.py -e $(classification)
+#python create_level1.py -e ${classification}
 
 # Create level2 file
-#python create_level2.py -e $(classification)
+#python create_level2.py -e ${classification}
 
 # Create level3 files
-python create_level3.py -e $(classification) -m instant
-python create_level3.py -e $(classification) -m daily
+python create_level3.py -e ${classification} -m instant
+python create_level3.py -e ${classification} -m daily
 
 # Prepare data for zenodo upload
-bash create_zenodo_datazip.sh $(classification)
+bash create_zenodo_datazip.sh ${classification}
 

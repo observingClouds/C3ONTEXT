@@ -9,13 +9,6 @@ The output is an array with the dimensions
     dates x image_x x image_y x 4
 """
 
-# Define workflow and instrument combinations
-combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
-          'VIS': {'workflow':'EUREC4A (VIS)', 'instrument': ['ABI', 'MODIS']},
-          'albedo': {'workflow':'EUREC4A (ICON; albedo)', 'instrument': ['', 'n/a']},
-          'cliq': {'workflow':'EUREC4A (ICON; cloud liquid + ice)', 'instrument': ['', 'n/a']}
-         }
-
 import sys
 import argparse
 
@@ -72,21 +65,15 @@ level2_file = conf[classification].level2.fn_zarr
 # Level3 filename
 level3_file = conf[classification].level3.fn_zarr
 
-# workflow = 'EUREC4A (VIS)'  # possible choices: 'EUREC4A (ICON; albedo)', 'EUREC4A (ICON; cloud liquid + ice)', 'EUREC4A (IR)', 'EUREC4A (VIS)']
-# workflow_dict = {'EUREC4A (IR)': 'IR',
-#                  'EUREC4A (ICON; albedo)': 'albedo',
-#                  'EUREC4A (ICON; cloud liquid + ice)': 'cliq',
-#                  'EUREC4A (VIS)': 'VIS'
-#                 }
-
-# # Define instrument of interest
-# instrument = ['ABI']  # possible choices: '', 'ABI', 'MODIS', 'n/a'
-# # instrument_dict = {'ABI': 'ABI',
-# #                    'MODIS': 'MODIS',
-# #                    '': '',
-# #                    'n/a': ''
-# #                   }
-
+# Define workflow and instrument combinations
+if classification == "EUREC4A":
+    combos = {'IR': {'workflow':'EUREC4A (IR)', 'instrument':['ABI']},
+              'VIS': {'workflow':'EUREC4A (VIS)', 'instrument': ['ABI', 'MODIS']},
+              'albedo': {'workflow':'EUREC4A (ICON; albedo)', 'instrument': ['', 'n/a']},
+              'cliq': {'workflow':'EUREC4A (ICON; cloud liquid + ice)', 'instrument': ['', 'n/a']}
+             }
+elif classification == "BAMS":
+    combos = {'VIS': {'workflow':'Full dataset_MODIS', 'instrument':['MODIS']}}
 
 try:
     git_module_version = subprocess.check_output(["git", "describe", "--dirty"]).strip().decode("utf-8")
@@ -188,7 +175,7 @@ for combo, combo_details in combos.items():
     # Add attributes to file
     # Variable attributes
     freq.attrs['_ARRAY_DIMENSIONS'] = ('date', 'longitude', 'latitude', 'pattern')
-    freq.attrs['description'] = f'{mode} classification frequency'
+    freq.attrs['description'] = f'{args["mode"]} classification frequency'
     freq.attrs['scale_factor'] = 1/10000
     lons.attrs['_ARRAY_DIMENSIONS'] = ('longitude')
     lons.attrs['standard_name'] = 'longitude'
