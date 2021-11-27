@@ -7,7 +7,7 @@ EUREC4A:
   input:
     subjects_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-subjects.csv'
     classifications_file: '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications.csv'
-    classifications_file_anonymous: '../zooniverse_raw/sugar-flower-fish-or-gravel-classifications_anonymized.csv'
+    classifications_file_anonymous: '../zooniverse_raw/EUREC4A_sugar-flower-fish-or-gravel-classifications_anonymized.csv'
 
   setup:
     workflows_of_interest: [13306, 13309, 13406]
