@@ -1,0 +1,14 @@
+import xarray as xr
+from numcodecs import Blosc
+
+ds=xr.open_zarr("EUREC4A_ManualClassifications_l2.zarr")
+ds_sel = ds #.isel(classification_id=slice(0,50))
+
+ds.classification_id.encoding['_FillValue'] = False
+ds.latitude.encoding['_FillValue'] = False
+ds.longitude.encoding['_FillValue'] = False
+
+encoding = {"classification_id" : {"chunks": -1, "dtype":"int8"}, "latitude": {"chunks":-1, "dtype":"f4"}, "longitude": {"chunks":-1, "dtype":"f4"}, "pattern":{"chunks":-1}, "mask": {"chunks":[500,100,100,4], "dtype":"bool", "compressor":Blosc(blocksize=0,clevel= 9,cname="zstd",shuffle= Blosc.BITSHUFFLE)} }
+ds_sel['mask'] = ds_sel.mask.chunk([500,100,100,4])
+ds_sel['mask']=ds_sel.mask.astype(bool)
+ds_sel.to_zarr("EUREC4A_ManualClassifications_l2.zarr2", encoding=encoding)
