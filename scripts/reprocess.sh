@@ -10,7 +10,16 @@
 #SBATCH --mail-user=hauke.schulz@mpimet.mpg.de
 #SBATCH --mail-type=ALL
 #=============================================================================
-# Reprocessing EUREC4A classification data
+# Reprocessing classification data
+#
+# call script as
+#   bash reprocess.sh BAMS     # for classifications done for Rasp et al. 2020
+#   bash reprocess.sh EUREC4A  # for classifications done for Schulz et al. 2021
+# or in case of using it with SLURM (SLURM header needs to be adapted to your environment)
+#   sbatch reprocess.sh BAMS
+#   sbatch reprocess.sh EUREC4A
+
+classification=$1
 
 # Download satellite data
 # python download_datdata.py
@@ -22,20 +31,22 @@
 # Upload files to zooniverse platform
 # python upload_Files.py
 
-# DO THE ACTUALLY WORK
+# DO THE ACTUAL CLASSIFICATION WORK
 
 # Download the classifications from the webpage (only project team can do this)
 # Save download to /zooniverse_raw
-module load python3/2021.01-gcc-9.1.0
+module load python3/2021.01-gcc-9.1.0 # this is specific to the DKRZ mistral cluster
+
 # Create level1 file
-#python create_level1.py -e EUREC4A
+#python create_level1.py -e ${classification}
 
 # Create level2 file
-#python create_level2.py -e EUREC4A
+#python create_level2.py -e ${classification}
 
 # Create level3 files
-python create_level3.py -e EUREC4A -m instant
-python create_level3.py -e EUREC4A -m daily
+python create_level3.py -e ${classification} -m instant
+python create_level3.py -e ${classification} -m daily
 
 # Prepare data for zenodo upload
-bash create_zenodo_datazip.sh
+bash create_zenodo_datazip.sh ${classification}
+
