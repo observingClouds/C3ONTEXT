@@ -154,9 +154,9 @@ for r,row in data_export.iterrows():
     positions[r,:] = zooniverse.convert_pixelCoords2latlonCoords(coords,region, imag_dimensions=imag_dim)[:,0]
 
 data_export['lon0'] = positions[:,0]
-data_export['lat0'] = positions[:,1]
+data_export['lat0'] = positions[:,3]
 data_export['lon1'] = positions[:,2]
-data_export['lat1'] = positions[:,3]
+data_export['lat1'] = positions[:,1]
 
 # Export Level1 data
 logging.info('Export level1 data to {}'.format(level1_file))
