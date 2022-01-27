@@ -40,6 +40,9 @@ module load python3/2021.01-gcc-9.1.0 # this is specific to the DKRZ mistral clu
 # Create level1 file
 #python create_level1.py -e ${classification}
 
+# Anonymize level1 file
+#python anonymize_data.py -e ${classification}
+
 # Create level2 file
 #python create_level2.py -e ${classification}
 
