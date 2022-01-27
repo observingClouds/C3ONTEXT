@@ -171,12 +171,16 @@ ds_l1.attrs['version'] = git_module_version
 ds_l1.attrs['python_version'] = "{}".format(sys.version)
 ds_l1.attrs['doi'] = 'not yet set'
 
-ds_l1.subject_ids.attrs['description'] = 'Identifier to which subject set the image belongs to'
-ds_l1.fn.attrs['description'] = 'Filename of source image file'
-ds_l1.x.attrs['description'] = 'x-origin of label'
-ds_l1.y.attrs['description'] = 'y-origin of label'
-ds_l1.width.attrs['description'] = 'width of label'
-ds_l1.height.attrs['description'] = 'height of label'
+ds_l1.subject_ids.attrs['description'] = 'identifier to which subject set the image belongs to'
+ds_l1.fn.attrs['description'] = 'filename of source image file'
+ds_l1.x.attrs['description'] = 'origin of label in image coordiantes (left)'
+ds_l1.y.attrs['description'] = 'origin of label in image coordiantes (upper)'
+ds_l1.width.attrs['description'] = 'width of label in image coordiantes'
+ds_l1.height.attrs['description'] = 'height of label in image coordiantes'
+ds_l1.lon0.attrs['description'] = 'western label extent'
+ds_l1.lat0.attrs['description'] = 'southern label extent'
+ds_l1.lon1.attrs['description'] = 'eastern label extent'
+ds_l1.lat1.attrs['description'] = 'northern label extent'
 ds_l1.tool_label.attrs['description'] = 'label'
 ds_l1.already_seen.attrs['description'] = 'Flag wheather the user has seen the label already'
 
