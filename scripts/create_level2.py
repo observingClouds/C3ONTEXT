@@ -101,7 +101,7 @@ lons = root_grp.create_dataset('longitude', shape=(nb_lons), chunks=(nb_lons),
 
 
 for b, box in enumerate(tqdm.tqdm(boxes_arr)):
-    mask_ = most_common_boxes(box,return_all_pattern=True,imag_dim=(nb_lons,nb_lats)).astype(int)*np.array([1,2,4,8])
+    mask_ = (most_common_boxes(box,return_all_pattern=True,imag_dim=(nb_lons,nb_lats))[:,:,:4]>0)*np.array([1,2,4,8])
     mask[b,:,:] = np.sum(mask_,axis=-1)
 
 clas_ids[:] = np.unique(df_l1.classification_id)
