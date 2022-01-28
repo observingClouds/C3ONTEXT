@@ -150,17 +150,13 @@ for combo, combo_details in combos.items():
             class_ids = user_df.classification_id
             class_ids = np.unique(class_ids)
             user_arr_ = da_arr.sel({'classification_id':class_ids})
-            user_arr = np.bitwise_and(user_arr_.expand_dims({'pattern':4},3).fillna(0).astype(int).values, np.array([1,2,4,8])[np.newaxis,np.newaxis,np.newaxis,:]).astype('bool')
+            user_arr = da.bitwise_and(user_arr_.expand_dims({'pattern':4},3).fillna(0).astype(int), np.array([1,2,4,8])[np.newaxis,np.newaxis,np.newaxis,:]).astype('bool')
+            del user_arr_
+            user_arr_ = np.any(user_arr,axis=0)  # along classification_id
+            date_arr[u, :,:,:] = user_arr_
+            del user_arr_
 
-            user_arr = np.any(user_arr,axis=0)  # along classification_id
-            #user_arr = np.where(user_arr>0, True, False)
-            
-            date_arr[u, :,:,:] = user_arr
-
-            #for p in range(4):
-            #    date_arr[u, :,:,p] = user_arr_.where(user_arr_ == 2**p).any(dim='classification_id').compute()
         nb_user[d] = len(np.unique(date_df_sel.user_name))
-#        freq[d,:,:,:] = np.floor((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])/scale_factor)
         freq[d,:,:,:] = np.nan_to_num(np.round((np.sum(date_arr[:,:,:,:], axis=0)/nb_user[d])*10000,0))
     if args["mode"] == "instant":
         reference = dt.datetime(1970,1,1)
@@ -168,8 +164,8 @@ for combo, combo_details in combos.items():
         reference = dt.datetime(1970,1,1).date()
     for d, (date, date_df) in enumerate(dates_groups):
         dates[d] = (date-reference).total_seconds()
-    lons[:] = da_arr.longitude.values  # np.linspace(-62,-40,nb_lons)
-    lats[:] = da_arr.latitude.values  # np.linspace(20,5,nb_lats)
+    lons[:] = da_arr.longitude.values
+    lats[:] = da_arr.latitude.values
     patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
 
     # Add attributes to file
