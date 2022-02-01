@@ -103,7 +103,7 @@ elif args["mode"] == "daily":
 
 nb_lats = len(da_arr.latitude)
 nb_lons = len(da_arr.longitude)
-nb_patterns = 4 #len(da_arr.pattern)
+nb_patterns = 5 #len(da_arr.pattern)
 nb_dates = len(dates_groups)
 
 def compute_scale_and_offset(min, max, n):
@@ -153,7 +153,8 @@ for combo, combo_details in combos.items():
             user_arr = da.bitwise_and(user_arr_.expand_dims({'pattern':4},3).fillna(0).astype(int), np.array([1,2,4,8])[np.newaxis,np.newaxis,np.newaxis,:]).astype('bool')
             del user_arr_
             user_arr_ = np.any(user_arr,axis=0)  # along classification_id
-            date_arr[u, :,:,:] = user_arr_
+            date_arr[u, :,:,:4] = user_arr_
+            date_arr[u, :,:,4] = np.all(~user_arr,axis=[0,3]) # along classification_id and pattern
             del user_arr_
 
         nb_user[d] = len(np.unique(date_df_sel.user_name))
@@ -166,7 +167,7 @@ for combo, combo_details in combos.items():
         dates[d] = (date-reference).total_seconds()
     lons[:] = da_arr.longitude.values
     lats[:] = da_arr.latitude.values
-    patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel']
+    patterns[:] = ['Sugar', 'Flowers', 'Fish', 'Gravel', 'Unclassified']
 
     # Add attributes to file
     # Variable attributes
