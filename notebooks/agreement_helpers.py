@@ -115,7 +115,7 @@ title is a string for the title of the plot
 H is the hatch used for identification of the different dataframe"""
 
     n_df = len(dfall)
-    n_col = len(dfall[0].columns) 
+    n_col = len(dfall[0].columns)
     n_ind = len(dfall[0].index)
     axe = plt.subplot(111)
 
