@@ -26,7 +26,7 @@ args = get_args()
 from omegaconf import OmegaConf as oc
 conf = oc.load(args['configfile'])
 
-
+import numpy as np
 import pandas as pd
 import xarray as xr
 
@@ -43,10 +43,10 @@ level1_data_filename_output = conf[classification].level1.fn_netcdf_anonymous
 df = pd.read_csv(raw_data_filename_input)
 if classification == "EUREC4A":
     df = df.iloc[38003:]  # remove data from other classification days
+uniq_names = df['user_name'].unique()
+uniq_ids = pd.Series(np.arange(len(uniq_names)))
+anonymize_dict = {n:i for i,n in zip(uniq_ids, uniq_names)}
+df['user_id'] = df['user_name'].apply(lambda x: anonymize_dict.get(x))
 del df['user_name']
 df.to_csv(raw_data_filename_output)
 
-# Anonymize level1 data
-ds = xr.open_dataset(level1_data_filename_input)
-del ds['user_name']
-ds.to_netcdf(level1_data_filename_output)

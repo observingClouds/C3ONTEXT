@@ -55,11 +55,11 @@ g.setup_logging(args['verbose'])
 classification = args['classification']
 
 # Path to zooniverse files
-clas_fn = conf[classification].input.classifications_file
+clas_fn = conf[classification].input.classifications_file_anonymous
 subj_fn = conf[classification].input.subjects_file
 
 # Level1 filename
-level1_file = conf[classification].level1.fn_netcdf
+level1_file = conf[classification].level1.fn_netcdf_anonymous
 
 # Define subject sets of interest
 subjs_of_interest = conf[classification].setup.subjects_of_interest
@@ -119,7 +119,7 @@ data_export['instrument'] = instruments
 
 # Remove unnecessary data fields
 logging.info('Remove unnecessary data fields')
-data_export = data_export.drop(columns=['user_ip', 'gold_standard', 'workflow_version',
+data_export = data_export.drop(columns=['Unnamed: 0', 'user_ip', 'gold_standard', 'workflow_version',
                                         'expert', 'subject_set_id', 'annotations',
                                         'metadata', 'subject_data'])
 
@@ -183,10 +183,12 @@ ds_l1.lon1.attrs['description'] = 'eastern label extent'
 ds_l1.lat1.attrs['description'] = 'northern label extent'
 ds_l1.tool_label.attrs['description'] = 'label'
 ds_l1.already_seen.attrs['description'] = 'Flag wheather the user has seen the label already'
-
+ds_l1.user_id.attrs['description'] = 'Id identifying individual users'
+ds_l1.instrument.attrs['description'] = 'Instrument that captured the classified scene e.g. MODIS, ABI or n/a in case of simulation output'
 ds_l1['already_seen'] = ds_l1.already_seen.astype(bool)
 
 variable_encoding = {
+                     'user_id': {'dtype': 'int16'},
                      'created_at': {'dtype': 'int32'},
                      'started_at': {'dtype': 'uint32'},
                      'finished_at': {'dtype': 'uint32'},
@@ -207,6 +209,7 @@ variable_encoding = {
                     }
 
 # Convert objects to integer (see https://github.com/pydata/xarray/issues/3149)
+ds_l1['user_id'] = ds_l1.user_id.astype(int)
 ds_l1['workflow_id'] = ds_l1.workflow_id.astype(int)
 ds_l1['subject_ids'] = ds_l1.subject_ids.astype(int)
 ds_l1['classification_id'] = ds_l1.classification_id.astype(int)
