@@ -148,6 +148,6 @@ for workflow, l3_file in sorted(files_manualClassifications_l3.items()):
         results[times_of_interest[i]] = pattern_results
     df = pd.DataFrame.from_dict(results, orient='index')
     output_folder = f'../temporary_data/agreement_threshold{frequency_threshold}'
-    if ~os.path.exists(output_folder):
-        os.mkdirs(output_folder)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
     df.to_pickle(output_folder+f'/agreement_results_ABI-IR_vs_{workflow}.pkl')
