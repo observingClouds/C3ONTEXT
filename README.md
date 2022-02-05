@@ -93,4 +93,4 @@ plt.xlim(dt.datetime(2020,1,6), dt.datetime(2020,2,23))
 ```
 </details>
 
-![timeseries](https://github.com/observingClouds/EUREC4A_manualclassifications/blob/master/figures/ManualClassification_Meteor_IR.png?raw=true)
+![timeseries](https://github.com/observingClouds/EUREC4A_manualclassifications/blob/master/figures/ManualClassification_Meteor_IR_daily.png?raw=true)
