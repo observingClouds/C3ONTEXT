@@ -52,8 +52,13 @@ python create_level3.py -e ${classification} -m daily
 
 # Calculate agreement between different classifications
 python calculate_agreement.py -t 0.1
-python calculate_agreement.py -t 0.25
 python calculate_agreement.py -t 0.5
+
+# Get subset of neural network classifications
+# (does not need to be executed since subset is included)
+# python extract_eurec4a_timeperiod_NNclassifications.py
+
+# Run notebooks for analysis
 
 # Prepare data for zenodo upload
 bash create_zenodo_datazip.sh ${classification}
