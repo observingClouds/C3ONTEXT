@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=mh0010
 #SBATCH --job-name=reprocess
-#SBATCH --partition=shared
+#SBATCH --partition=gpu
 #SBATCH --chdir=/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/scripts/
 #SBATCH --nodes=1
 #SBATCH --output=/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/scripts/logs/LOG.reprocess.%j.o
@@ -38,10 +38,10 @@ classification=$1
 module load python3/2021.01-gcc-9.1.0 # this is specific to the DKRZ mistral cluster
 
 # Create level1 file
-#python create_level1.py -e ${classification}
+python create_level1.py -e ${classification}
 
 # Anonymize level1 file
-#python anonymize_data.py -e ${classification}
+python anonymize_data.py -e ${classification}
 
 # Create level2 file
 python create_level2.py -e ${classification}
@@ -49,6 +49,11 @@ python create_level2.py -e ${classification}
 # Create level3 files
 python create_level3.py -e ${classification} -m instant
 python create_level3.py -e ${classification} -m daily
+
+# Calculate agreement between different classifications
+python calculate_agreement.py -t 0.1
+python calculate_agreement.py -t 0.25
+python calculate_agreement.py -t 0.5
 
 # Prepare data for zenodo upload
 bash create_zenodo_datazip.sh ${classification}
