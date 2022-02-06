@@ -169,7 +169,7 @@ ds_l1.attrs['created_with'] = os.path.basename(__file__) + " with its last modif
             os.path.getmtime(os.path.realpath(__file__)))
 ds_l1.attrs['version'] = git_module_version
 ds_l1.attrs['python_version'] = "{}".format(sys.version)
-ds_l1.attrs['doi'] = 'not yet set'
+ds_l1.attrs['doi'] = '10.5281/zenodo.5979718'
 
 ds_l1.subject_ids.attrs['description'] = 'identifier to which subject set the image belongs to'
 ds_l1.fn.attrs['description'] = 'filename of source image file'

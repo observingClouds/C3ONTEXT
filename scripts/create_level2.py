@@ -133,6 +133,7 @@ root_grp.attrs['created_with'] = os.path.basename(__file__) + " with its last mo
             os.path.getmtime(os.path.realpath(__file__)))
 root_grp.attrs['version'] = git_module_version
 root_grp.attrs['python_version'] = "{}".format(sys.version)
+root_grp.attrs['doi'] = '10.5281/zenodo.5979718'
 
 zarr.consolidate_metadata(store)
 logging.info('Level2 data creation completed')

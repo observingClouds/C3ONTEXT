@@ -201,6 +201,7 @@ for combo, combo_details in combos.items():
                 os.path.getmtime(os.path.realpath(__file__)))
     root_grp.attrs['version'] = git_module_version
     root_grp.attrs['python_version'] = "{}".format(sys.version)
+    root_grp.attrs['doi'] = '10.5281/zenodo.5979718'
 
     zarr.consolidate_metadata(store)
 
