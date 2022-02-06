@@ -9,13 +9,13 @@ label_map= {'Sugar':0, 'Fish': 3, 'Flowers': 2, 'Flower': 2, 'Gravel': 1}
 label_map_rv = {0:'Sugar', 1:'Gravel', 2: 'Flowers', 3: 'Fish'}
 color_dict = {'Sugar':'#A1D791','Fish':'#2281BB','Gravel':'#3EAE47', 'Flowers': '#93D2E2'}
 
-fn_ABI_IR = '/mnt/lustre02/work/mh0010/m300408/CharacterizationOfMesoscalePatterns/Data/Level_1/GOES16_CH13_classifications_2018-2020_NDJFM_30min.zarr/' #" ABIonICONdomain_DOM01.zarr'
+fn_ABI_IR = '../auxiliary_data/GOES16_CH13_classifications_EUREC4A_30min.zarr/'
 files_manualClassifications_l3 = {
-       "manualVIS": '/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/processed_data/EUREC4A_ManualClassifications_l3_VIS_instant.zarr',
-          "manualIR": '/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/processed_data/EUREC4A_ManualClassifications_l3_IR_instant.zarr',
-             "manualICON": '/work/mh0010/m300408/EUREC4A_CloudClassification/manual/EUREC4A_manualclassifications/processed_data/EUREC4A_ManualClassifications_l3_albedo_instant.zarr' 
+       "manualVIS": '../processed_data/EUREC4A_ManualClassifications_l3_VIS_instant.zarr',
+       "manualIR": '../processed_data/EUREC4A_ManualClassifications_l3_IR_instant.zarr',
+       "manualICON": '../processed_data/EUREC4A_ManualClassifications_l3_albedo_instant.zarr' 
 }
-fn_iorg = '/work/mh0010/m300408/EUREC4A_CloudClassification/metrics/GOES16_IR_nc_Iorg_EUREC4A_10-20_-58--48.nc'
+fn_iorg = '../auxiliary_data/GOES16_IR_nc_Iorg_EUREC4A_10-20_-58--48.nc'
 
 import tqdm
 import dask
