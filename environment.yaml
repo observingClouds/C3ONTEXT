@@ -1,0 +1,25 @@
+name: c3ontext2
+dependencies:
+  - basemap
+  - matplotlib
+  - seaborn
+  - numpy
+  - python>=3.7
+  - xarray
+  - zarr
+  - tqdm
+  - netcdf4
+  - dask
+  - pandas
+  - pip
+  - pip:
+    - aiohttp
+    - eurec4a
+    - fsspec
+    - h5netcdf
+    - intake
+    - intake-xarray
+    - ipfsspec
+    - numcodecs
+    - requests
+
