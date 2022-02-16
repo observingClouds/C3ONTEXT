@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software or the dataset it created, please cite it as below."
+authors:
+- family-names: "Schulz"
+  given-names: "Hauke"
+  orcid: "https://orcid.org/0000-0001-5468-1137"
+title: "C3ONTEXT: A Common Consensus on Convective OrgaNizaTion during the EUREC4A eXperimenT"
+doi: 10.5194/essd-2021-427
+url: "https://github.com/observingClouds/C3ONTEXT"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Schulz"
+    given-names: "Hauke"
+    orcid: "https://orcid.org/0000-0001-5468-1137"
+  doi: "10.5194/essd-2021-427"
+  journal: "Earth Syst. Sci. Data"
+  title: "C3ONTEXT: A Common Consensus on Convective OrgaNizaTion during the EUREC4A eXperimenT"
+  year: accepted

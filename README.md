@@ -1,6 +1,8 @@
 # C³ONTEXT: A Common Consensus on Convective OrgaNizaTion during the EUREC⁴A eXperimenT
 Data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3763351.svg)](https://doi.org/10.5281/zenodo.3763351)
 
+[Paper](https://doi.org/10.5194/essd-2021-427)
+
 This repository includes the source code for the post-processing of the manual cloud classifications
 that have been gathered during an online hackathon with international scientists in March 2020.
 
