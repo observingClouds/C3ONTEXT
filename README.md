@@ -13,30 +13,34 @@ campaign has been enormous, the procedure to retrieve the cloud classifications 
 shown below for the RV Meteor.
 <details><summary>Source code</summary>
 
+Please install all requirements before executing the code:
+
+```bash
+pip install eurec4a dask matplotlib pandas
+```
+
 ```python
 import numpy as np
-import xarray as xr
-import matplotlib.pyplot as plt
-from matplotlib import dates
 import datetime as dt
+import dask
+import matplotlib.pyplot as plt
+import eurec4a
+from matplotlib import dates
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
-```
-Choose a specific workflow e.g. IR or VIS
-```python
-# Workflow as given in l3 output
-workflow = 'IR'
 
-# Level3 filename (input)
-level3_file = '../processed_data/EUREC4A_ManualClassifications_l3_{workflow}.zarr'.format(workflow=workflow)
-
-# DSHIP Meteor (input)
-meteor_dship_file = 'EUREC4A_Meteor_DSHIP.nc'
+cat = eurec4a.get_intake_catalog()
 ```
 
-Open `level 3` dataset:
+Loading classifications that are based on the infrared satellite images.
 ```python
-ds = xr.open_zarr(level3_file)
+ds = c3ontext_cat.level3_IR_daily.to_dask()
+```
+
+Loading the platform track
+```python
+platform = 'Meteor'
+ds_plat = cat[platform].track.to_dask()
 ```
 
 Define standard colors:
@@ -47,49 +51,37 @@ color_dict = {'Flowers':'#2281BB',
               'Sugar': '#A1D791'}
 ```
 
-Open the trajectory file of the platform of interest.
-(How to retrieve the Meteor data is explained e.g. at [DSHIPConverter](https://github.com/observingClouds/DSHIPconverter))
-```python
-ds_meteor = xr.open_dataset(meteor_dship_file)
 
-# Make coordinates data variables
-ds_meteor['latitude'] = xr.DataArray(ds_meteor.lat.values, dims=['time'])
-ds_meteor['longitude'] = xr.DataArray(ds_meteor.lon.values, dims=['time'])
-```
-The `level 3` data is a daily average. For simplicity, we calculate the daily mean position of the vessel:
+The `level 3` data used in this example is a daily average. For simplicity and assuming
+that both the platform as well as the meso-scale patterns do not change quickly, we calculate the
+daily mean position of the platform:
 ```python
-ds_meteor_daily = ds_meteor.resample(time='1D').mean() # Attention, only works as long as the 0 meridian is not crossed
+ds_plat_rs = ds_plat.resample(time='1D').mean() # Attention, only works as long as the 0 meridian is not crossed
 ```
 
-Load and plot the data:
+Plot the data:
 ```python
-frequency = np.zeros((len(ds.date)))
+# Reading the actual data
+with dask.config.set(**{'array.slicing.split_large_chunks': False}):
+    data = ds.freq.interp(latitude=ds_plat_rs.lat, longitude=ds_plat_rs.lon).sel(date=ds_plat_rs.time)
+    data.load()
+data=data.fillna(0)*100
 
-fig, ax = plt.subplots(figsize=(8,1.5))
-
-for d, date in enumerate(ds_meteor_daily.time):
+# Plotting
+fig, ax = plt.subplots(figsize=(8,2))
+for d, (time, tdata) in enumerate(data.groupby('time')):
     frequency = 0
-    lat = ds_meteor_daily.latitude.sel(time=date)
-    lon = ds_meteor_daily.longitude.sel(time=date)
-    for p in ['Sugar', 'Gravel', 'Fish', 'Flowers']:
-        try:
-            # Actually loading the data
-            data = ds.freq.interp(latitude=lat, longitude=lon).sel(date=date, pattern=p).values *100
-        except KeyError:
-            print('No data found for date {}'.format(date))
-            break
-        if np.isnan(data):
-            data = 0
-        ax.bar(dates.date2num(date), data, label=p, bottom=frequency, color=color_dict[p])
+    for p in ['Sugar', 'Gravel', 'Flowers', 'Fish', 'Unclassified']:
+        ax.bar(dates.date2num(time), float(tdata.sel(pattern=p)), label=p, bottom=frequency, color=color_dict[p])
         hfmt = dates.DateFormatter('%d.%m')
         ax.xaxis.set_major_locator(dates.DayLocator(interval=5))
         ax.xaxis.set_major_formatter(hfmt)
-        frequency += data
+        frequency += tdata.sel(pattern=p)
     if d == 0:
         plt.legend(frameon=False, bbox_to_anchor=(1,1))
 plt.xlabel('date')
-plt.ylabel('classification (%)')
-plt.xlim(dt.datetime(2020,1,6), dt.datetime(2020,2,23))
+plt.ylabel('agreement / %')
+xlim=plt.xlim(dt.datetime(2020,1,6), dt.datetime(2020,2,23))
 ```
 </details>
 
