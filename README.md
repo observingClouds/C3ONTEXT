@@ -13,6 +13,12 @@ campaign has been enormous, the procedure to retrieve the cloud classifications 
 shown below for the RV Meteor.
 <details><summary>Source code</summary>
 
+Please install all requirements before executing the code:
+
+```bash
+pip install eurec4a dask matplotlib pandas
+```
+
 ```python
 import numpy as np
 import datetime as dt
