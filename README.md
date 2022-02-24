@@ -1,7 +1,8 @@
 # C³ONTEXT: A Common Consensus on Convective OrgaNizaTion during the EUREC⁴A eXperimenT
-Data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3763351.svg)](https://doi.org/10.5281/zenodo.3763351)
+[![Paper](https://img.shields.io/badge/Paper-10.5194%2Fessd--2021--427-green)](https://doi.org/10.5194/essd-2021-427)
+[![Data](https://img.shields.io/badge/Data-10.5281%2Fzenodo.3763351-green)](https://doi.org/10.5281/zenodo.3763351)
 
-[Paper](https://doi.org/10.5194/essd-2021-427)
+
 
 This repository includes the source code for the post-processing of the manual cloud classifications
 that have been gathered during an online hackathon with international scientists in March 2020.
@@ -88,3 +89,5 @@ xlim=plt.xlim(dt.datetime(2020,1,6), dt.datetime(2020,2,23))
 </details>
 
 ![timeseries](https://github.com/observingClouds/EUREC4A_manualclassifications/blob/master/figures/ManualClassification_Meteor_IR_daily.png?raw=true)
+
+Further information on how to use this dataset can also be found on the [How to EUREC⁴A-Website](https://howto.eurec4a.eu/c3ontext.html)
