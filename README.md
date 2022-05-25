@@ -1,6 +1,7 @@
 # C³ONTEXT: A Common Consensus on Convective OrgaNizaTion during the EUREC⁴A eXperimenT
 [![Paper](https://img.shields.io/badge/Paper-10.5194%2Fessd--14--1233--2022-green)](https://doi.org/10.5194/essd-14-1233-2022)
 [![Data](https://img.shields.io/badge/Data-10.5281%2Fzenodo.3763351-green)](https://doi.org/10.5281/zenodo.3763351)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/observingClouds/C3ONTEXT/HEAD?labpath=notebooks%2Ffig5_query_classifications_at_platform.ipynb)
 
 
 
