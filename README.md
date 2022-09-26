@@ -38,7 +38,7 @@ cat = eurec4a.get_intake_catalog()
 
 Loading classifications that are based on the infrared satellite images.
 ```python
-ds = c3ontext_cat.level3_IR_daily.to_dask()
+ds = cat.c3ontext.level3_IR_daily.to_dask()
 ```
 
 Loading the platform track
